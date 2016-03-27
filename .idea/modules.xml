@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/xenonlauncher.iml" filepath="$PROJECT_DIR$/xenonlauncher.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/xenonlauncher.iml" filepath="$PROJECT_DIR$/.idea/modules/xenonlauncher.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/xenonlauncher_main.iml" filepath="$PROJECT_DIR$/.idea/modules/xenonlauncher_main.iml" group="xenonlauncher" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/xenonlauncher_test.iml" filepath="$PROJECT_DIR$/.idea/modules/xenonlauncher_test.iml" group="xenonlauncher" />
     </modules>
   </component>
 </project>

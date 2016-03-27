@@ -6,17 +6,24 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    provided
+}
+
 dependencies {
-    compile {
-        'com.google.code.gson:gson:2.6.2'
-        'org.apache.httpcomponents:httpmime:4.2.3'
-    }
+    provided 'com.google.code.gson:gson:2.6.2'
+    provided 'org.apache.httpcomponents:httpcore:4.4.4'
+    provided 'org.apache.httpcomponents:httpclient:4.5.2'
 }
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 sourceSets {
+    main.compileClasspath += configurations.provided
+    test.compileClasspath += configurations.provided
+    test.runtimeClasspath += configurations.provided
+
     main {
         java {
             srcDir 'src/main/java'

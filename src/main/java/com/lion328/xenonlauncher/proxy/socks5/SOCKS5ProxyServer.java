@@ -1,14 +1,17 @@
 package com.lion328.xenonlauncher.proxy.socks5;
 
+import com.lion328.xenonlauncher.proxy.BufferedSocket;
 import com.lion328.xenonlauncher.proxy.DataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.util.StreamUtil;
-import com.sun.corba.se.spi.orbutil.fsm.Input;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -22,10 +25,10 @@ public class SOCKS5ProxyServer implements ProxyServer {
 
     public SOCKS5ProxyServer() {
         running = false;
-        handlers = new TreeMap<Integer, DataHandler>();
+        handlers = new TreeMap<>();
     }
 
-    private void processRequest(Socket socket) throws IOException {
+    private void processRequest(Socket socket) throws Exception {
         InputStream in = socket.getInputStream();
         OutputStream out = socket.getOutputStream();
 
@@ -72,14 +75,14 @@ public class SOCKS5ProxyServer implements ProxyServer {
         }
     }
 
-    private void handleConnect(ConnectRequestPacket connectReq, Socket socket) throws IOException {
+    private void handleConnect(ConnectRequestPacket connectReq, Socket socket) throws Exception {
         InetAddress addr = connectReq.getAddress().toInetAddress();
-        Socket connSocket = new Socket(addr, connectReq.getPort());
+        Socket connSocket = new BufferedSocket(new Socket(addr, connectReq.getPort()));
 
         new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.SUCCEEDED, Address.fromInetAddress(AddressType.IPV4, socket.getInetAddress()), socket.getPort()).write(socket.getOutputStream());
 
         for(Map.Entry<Integer, DataHandler> entry : handlers.entrySet())
-            if(entry.getValue().process(socket.getInputStream(), socket.getOutputStream(), connSocket.getInputStream(), connSocket.getOutputStream()))
+            if (entry.getValue().process(socket, connSocket))
                 break;
 
         connSocket.close();
@@ -96,7 +99,7 @@ public class SOCKS5ProxyServer implements ProxyServer {
         while(true) {
             connSocket = null;
             try {
-                connSocket = server.accept();
+                connSocket = new BufferedSocket(server.accept());
             } catch (SocketTimeoutException e) {
                 break;
             }
@@ -110,9 +113,8 @@ public class SOCKS5ProxyServer implements ProxyServer {
         ConnectResponsePacket.State state = connSocket == null ? ConnectResponsePacket.State.TTL_EXPIRED : ConnectResponsePacket.State.SUCCEEDED;
         new ConnectResponsePacket(VERSION, state, Address.fromInetAddress(AddressType.IPV4, connSocket.getInetAddress()), connSocket.getPort()).write(socket.getOutputStream());
 
-        for(Map.Entry<Integer, DataHandler> entry : handlers.entrySet())
-            if(entry.getValue().process(socket.getInputStream(), socket.getOutputStream(), connSocket.getInputStream(), connSocket.getOutputStream()))
-                break;
+        StreamUtil.pipeStreamThread(socket.getInputStream(), connSocket.getOutputStream());
+        StreamUtil.pipeStream(connSocket.getInputStream(), socket.getOutputStream());
 
         connSocket.close();
     }
@@ -123,14 +125,14 @@ public class SOCKS5ProxyServer implements ProxyServer {
         running = true;
         serverSocket = server;
         while (running) {
-            final Socket socket = serverSocket.accept();
+            final Socket socket = new BufferedSocket(serverSocket.accept());
             new Thread() {
 
                 public void run() {
                     try {
                         processRequest(socket);
                         socket.close();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
