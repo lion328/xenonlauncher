@@ -4,7 +4,9 @@ import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
+import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
+import com.lion328.xenonlauncher.minecraft.launcher.json.exception.MissingInformationException;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
 import com.lion328.xenonlauncher.util.FileUtil;
 
@@ -26,20 +28,33 @@ public class JSONGameLauncher extends BasicGameLauncher {
     private File librariesDir;
     private File versionsDir;
 
-    public JSONGameLauncher(GameVersion version, File basepathDir, File librariesDir, File versionsDir) throws LauncherVersionException {
+    public JSONGameLauncher(GameVersion version, File basepathDir) throws LauncherVersionException {
         if (version.getMinimumLauncherVersion() != GameVersion.PARSER_VERSION)
             throw new LauncherVersionException("Unsupported launcher version (" + version.getMinimumLauncherVersion() + ")");
 
         versionInfo = version;
         this.basepathDir = basepathDir;
-        this.librariesDir = librariesDir;
-        this.versionsDir = versionsDir;
+        this.librariesDir = new File(basepathDir, "libraries");
+        this.versionsDir = new File(basepathDir, "versions");
 
         initialize();
     }
 
     private void initialize() {
+        replaceArgs.put("version_name", versionInfo.getID());
+        replaceArgs.put("version_type", versionInfo.getReleaseType().toString());
+        replaceArgs.put("game_directory", basepathDir.getAbsolutePath());
+        replaceArgs.put("user_properties", "{}");
+        replaceArgs.put("user_type", "legacy");
+        replaceArgs.put("auth_uuid", new UUID(0, 0).toString());
+        replaceArgs.put("auth_access_token", "12345");
+        replaceArgs.put("assets_index_name", versionInfo.getAssets());
 
+        File assetsRoot = new File(basepathDir, "assets");
+        if (versionInfo.getMainClass().equals("net.minecraft.launchwrapper.Launch"))
+            assetsRoot = new File(assetsRoot, "virtual/legacy");
+
+        replaceArgs.put("assets_root", assetsRoot.getAbsolutePath());
     }
 
     private File getDependencyFile(DependencyName name) {
@@ -73,7 +88,7 @@ public class JSONGameLauncher extends BasicGameLauncher {
                 librariesLoop:
                 for (; (entry = zip.getNextEntry()) != null; zip.closeEntry()) {
                     for (String exclude : library.getExtractRule().getExcludeList()) {
-                        if (exclude.startsWith(entry.getName()))
+                        if (entry.getName().startsWith(exclude))
                             continue librariesLoop;
                     }
 
@@ -168,7 +183,18 @@ public class JSONGameLauncher extends BasicGameLauncher {
     private String buildClasspath(File patchedLibDir) throws Exception {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(new File(versionsDir, versionInfo.getID() + "/" + versionInfo.getID() + ".jar").getAbsolutePath());
+        File versionJar = new File(versionsDir, versionInfo.getID() + "/" + versionInfo.getID() + ".jar");
+        GameVersion version = versionInfo;
+
+        while (!versionJar.isFile()) {
+            if (version instanceof MergedGameVersion) {
+                version = ((MergedGameVersion) version).getParent();
+                versionJar = new File(versionsDir, version.getID() + "/" + version.getID() + ".jar");
+            } else
+                throw new MissingInformationException(versionJar.getAbsolutePath() + " is missing");
+        }
+
+        sb.append(versionJar.getAbsolutePath());
 
         for (GameLibrary library : versionInfo.getLibraries()) {
             if (!library.isJavaLibrary() || !library.isAllowed())
@@ -222,6 +248,7 @@ public class JSONGameLauncher extends BasicGameLauncher {
     }
 
     private ProcessBuilder buildProcess(File nativesDir, File patchedLibDir) throws Exception {
+        System.out.println(buildProcessArgs(nativesDir, patchedLibDir));
         ProcessBuilder processBuilder = new ProcessBuilder(buildProcessArgs(nativesDir, patchedLibDir));
         processBuilder.directory(basepathDir);
         return processBuilder;

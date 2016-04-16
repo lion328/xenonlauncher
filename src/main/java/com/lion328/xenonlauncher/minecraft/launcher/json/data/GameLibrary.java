@@ -55,7 +55,7 @@ public class GameLibrary {
     }
 
     public boolean isJavaLibrary() {
-        return downloadInfo != null && downloadInfo.getArtifactInfo() != null;
+        return !isNativesLibrary() || (downloadInfo != null && downloadInfo.getArtifactInfo() != null);
     }
 
     public boolean isAllowed(OS os, String version) {

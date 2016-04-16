@@ -6,6 +6,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
+import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
@@ -29,7 +30,7 @@ public class Main {
         File basepath = new File("/home/lion328/.minecraft");
         File versions = new File(basepath, "versions");
         File libraries = new File(basepath, "libraries");
-        String id = "1.9.2";
+        String id = "1.8.9-forge1.8.9-11.15.1.1847";
 
         File jsonFile = new File(versions, id + "/" + id + ".json");
 
@@ -37,8 +38,13 @@ public class Main {
         gsonBuilder.registerTypeAdapter(DependencyName.class, new DependencyNameTypeAdapter());
         Gson gson = gsonBuilder.create();
         GameVersion version = gson.fromJson(new FileReader(jsonFile), GameVersion.class);
+        GameVersion parent = gson.fromJson(new FileReader(new File(versions, "1.8.9/1.8.9.json")), GameVersion.class);
+        version = new MergedGameVersion(version, parent);
 
-        GameLauncher launcher = new JSONGameLauncher(version, basepath, libraries, versions);
+        GameLauncher launcher = new JSONGameLauncher(version, basepath);
+        launcher.replaceArgument("auth_player_name", "lion328");
+        launcher.replaceArgument("auth_uuid", "f0e9f5b95ce74d3d9545f2013d23ace7");
+        launcher.replaceArgument("auth_access_token", "");
         final Process process = launcher.launch();
 
         new Thread() {

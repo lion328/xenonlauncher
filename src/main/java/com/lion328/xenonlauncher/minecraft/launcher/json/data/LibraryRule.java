@@ -35,7 +35,7 @@ public class LibraryRule {
         }
 
         public boolean isMatch(OS os, String version) {
-            return this.os == os && version.matches(versionPattern);
+            return this.os == os && (versionPattern == null || version.matches(versionPattern));
         }
     }
 
