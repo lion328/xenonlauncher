@@ -1,5 +1,12 @@
 package com.lion328.xenonlauncher.main;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
+import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
+import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
+import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
+import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.StreamDataHandler;
@@ -10,13 +17,64 @@ import org.apache.http.HttpResponse;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        File basepath = new File("/home/lion328/.minecraft");
+        File versions = new File(basepath, "versions");
+        File libraries = new File(basepath, "libraries");
+        String id = "1.9.2";
+
+        File jsonFile = new File(versions, id + "/" + id + ".json");
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(DependencyName.class, new DependencyNameTypeAdapter());
+        Gson gson = gsonBuilder.create();
+        GameVersion version = gson.fromJson(new FileReader(jsonFile), GameVersion.class);
+
+        GameLauncher launcher = new JSONGameLauncher(version, basepath, libraries, versions);
+        final Process process = launcher.launch();
+
+        new Thread() {
+
+            @Override
+            public void run() {
+                int b;
+                try {
+                    while ((b = process.getErrorStream().read()) != -1)
+                        System.err.write(b);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+        Thread td = new Thread() {
+
+            @Override
+            public void run() {
+                int b;
+                try {
+                    while ((b = process.getInputStream().read()) != -1)
+                        System.out.write(b);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    e.printStackTrace();
+                }
+            }
+        };
+        td.start();
+        td.join();
+
+        System.exit(0);
+
         ServerSocket server = new ServerSocket(35565);
         ProxyServer proxy = new SOCKS5ProxyServer();
         proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler() {
@@ -38,7 +96,7 @@ public class Main {
 
             @Override
             public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException {
-                if (httpContext.getAttribute("send-request") != Boolean.TRUE) {
+                if (httpContext.getAttribute("sent-request") != Boolean.TRUE) {
                     httpContext.setAttribute("need-original", true);
                     return;
                 }
