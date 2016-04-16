@@ -51,7 +51,7 @@ public class JSONGameLauncher extends BasicGameLauncher {
         replaceArgs.put("assets_index_name", versionInfo.getAssets());
 
         File assetsRoot = new File(basepathDir, "assets");
-        if (versionInfo.getMainClass().equals("net.minecraft.launchwrapper.Launch"))
+        if (versionInfo.getAssets().equals("legacy"))
             assetsRoot = new File(assetsRoot, "virtual/legacy");
 
         replaceArgs.put("assets_root", assetsRoot.getAbsolutePath());

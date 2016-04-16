@@ -27,7 +27,7 @@ public class GameVersion {
     @SerializedName("minimumLauncherVersion")
     private int version;
     @SerializedName("assets")
-    private String assets;
+    private String assets = "legacy";
     @SerializedName("downloads")
     private Map<String, DownloadInformation> downloads;
     @SerializedName("assetInfo")

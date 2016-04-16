@@ -44,7 +44,7 @@ public class Main {
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
         launcher.replaceArgument("auth_player_name", "lion328");
         launcher.replaceArgument("auth_uuid", "f0e9f5b95ce74d3d9545f2013d23ace7");
-        launcher.replaceArgument("auth_access_token", "");
+        //launcher.replaceArgument("auth_access_token", "");
         final Process process = launcher.launch();
 
         new Thread() {
