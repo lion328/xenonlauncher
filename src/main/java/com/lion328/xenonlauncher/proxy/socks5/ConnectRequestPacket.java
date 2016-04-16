@@ -21,8 +21,8 @@ public class ConnectRequestPacket implements Packet {
         }
 
         public static Command getByByte(int b) {
-            for(Command cmd : values())
-                if(cmd.b == (b & 0xFF))
+            for (Command cmd : values())
+                if (cmd.b == (b & 0xFF))
                     return cmd;
             return null;
         }

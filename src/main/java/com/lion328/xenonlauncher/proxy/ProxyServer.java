@@ -6,6 +6,8 @@ import java.net.ServerSocket;
 public interface ProxyServer {
 
     void start(ServerSocket server) throws IOException;
+
     void stop();
+
     void addDataHandler(int level, DataHandler handler);
 }

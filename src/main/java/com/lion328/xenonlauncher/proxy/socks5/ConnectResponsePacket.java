@@ -29,8 +29,8 @@ public class ConnectResponsePacket implements Packet {
         }
 
         public static State getByByte(int b) {
-            for(State s : values())
-                if(s.b == (b & 0xFF))
+            for (State s : values())
+                if (s.b == (b & 0xFF))
                     return s;
             return null;
         }

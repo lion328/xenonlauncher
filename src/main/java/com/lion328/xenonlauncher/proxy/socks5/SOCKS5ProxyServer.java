@@ -35,17 +35,17 @@ public class SOCKS5ProxyServer implements ProxyServer {
         GreetingRequestPacket greetingReq = new GreetingRequestPacket();
         greetingReq.read(in);
 
-        if(greetingReq.getVersion() != VERSION)
+        if (greetingReq.getVersion() != VERSION)
             throw new IOException("Version mismatch");
 
         AuthenticationMethod noAuth = null;
-        for(AuthenticationMethod method : greetingReq.getAvailableAuthenticationMethods())
-            if(method == AuthenticationMethod.NO_AUTHENTICATION_REQUIRED) {
+        for (AuthenticationMethod method : greetingReq.getAvailableAuthenticationMethods())
+            if (method == AuthenticationMethod.NO_AUTHENTICATION_REQUIRED) {
                 noAuth = method;
                 break;
             }
 
-        if(noAuth == null)
+        if (noAuth == null)
             throw new IOException("No supported authentication method available");
 
         new GreetingResponsePacket(VERSION, noAuth).write(out);
@@ -53,15 +53,15 @@ public class SOCKS5ProxyServer implements ProxyServer {
         ConnectRequestPacket connectReq = new ConnectRequestPacket();
         connectReq.read(in);
 
-        if(connectReq.getVersion() != VERSION)
+        if (connectReq.getVersion() != VERSION)
             throw new IOException("Version mismatch");
 
-        if(connectReq.getAddress().getType() == AddressType.IPV6) {
+        if (connectReq.getAddress().getType() == AddressType.IPV6) {
             new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.ADDRESS_TYPE_NOT_SUPPORTED, connectReq.getAddress(), connectReq.getPort()).write(out);
             return;
         }
 
-        switch(connectReq.getCommand()) {
+        switch (connectReq.getCommand()) {
             case CONNECT:
                 handleConnect(connectReq, socket);
                 break;
@@ -81,7 +81,7 @@ public class SOCKS5ProxyServer implements ProxyServer {
 
         new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.SUCCEEDED, Address.fromInetAddress(AddressType.IPV4, socket.getInetAddress()), socket.getPort()).write(socket.getOutputStream());
 
-        for(Map.Entry<Integer, DataHandler> entry : handlers.entrySet())
+        for (Map.Entry<Integer, DataHandler> entry : handlers.entrySet())
             if (entry.getValue().process(socket, connSocket))
                 break;
 
@@ -96,14 +96,14 @@ public class SOCKS5ProxyServer implements ProxyServer {
 
         new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.SUCCEEDED, Address.fromInetAddress(AddressType.IPV4, server.getInetAddress()), server.getLocalPort()).write(socket.getOutputStream());
 
-        while(true) {
+        while (true) {
             connSocket = null;
             try {
                 connSocket = new BufferedSocket(server.accept());
             } catch (SocketTimeoutException e) {
                 break;
             }
-            if(connSocket.getInetAddress().equals(targetAddress) && connSocket.getPort() == connectReq.getPort()) {
+            if (connSocket.getInetAddress().equals(targetAddress) && connSocket.getPort() == connectReq.getPort()) {
                 server.close();
                 break;
             } else

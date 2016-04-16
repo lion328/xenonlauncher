@@ -1,6 +1,12 @@
 package com.lion328.xenonlauncher.proxy;
 
-import org.apache.http.*;
+import org.apache.http.ConnectionClosedException;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
+import org.apache.http.ProtocolException;
 import org.apache.http.impl.DefaultBHttpClientConnection;
 import org.apache.http.impl.DefaultBHttpServerConnection;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;

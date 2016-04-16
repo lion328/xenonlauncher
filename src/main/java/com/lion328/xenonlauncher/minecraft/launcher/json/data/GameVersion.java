@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class GameVersion {
 
-    public static final int PARSER_VERSION = 18;
+    public static final int PARSER_VERSION = 14;
 
     @SerializedName("id")
     private String id;

@@ -39,15 +39,15 @@ public class GreetingRequestPacket implements Packet {
         version = in.read() & 0xFF;
         int methodAvailable = in.read();
         availableAuthenticationMethods = new AuthenticationMethod[methodAvailable];
-        for(int i = 0; i < methodAvailable; i++)
-            availableAuthenticationMethods[i] = AuthenticationMethod.getByByte((byte)(in.read() & 0xFF));
+        for (int i = 0; i < methodAvailable; i++)
+            availableAuthenticationMethods[i] = AuthenticationMethod.getByByte((byte) (in.read() & 0xFF));
     }
 
     @Override
     public void write(OutputStream out) throws IOException {
         out.write(version & 0xFF);
         out.write(availableAuthenticationMethods.length & 0xFF);
-        for(AuthenticationMethod method : availableAuthenticationMethods)
+        for (AuthenticationMethod method : availableAuthenticationMethods)
             out.write(method.getByte());
     }
 }

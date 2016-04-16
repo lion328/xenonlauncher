@@ -19,8 +19,8 @@ public enum AuthenticationMethod {
     }
 
     public static AuthenticationMethod getByByte(int b) {
-        for(AuthenticationMethod method : values())
-            if(method.b == (b & 0xFF))
+        for (AuthenticationMethod method : values())
+            if (method.b == (b & 0xFF))
                 return method;
         return UNKNOWN;
     }

@@ -7,5 +7,6 @@ import java.io.OutputStream;
 public interface Packet {
 
     void read(InputStream in) throws IOException;
+
     void write(OutputStream out) throws IOException;
 }

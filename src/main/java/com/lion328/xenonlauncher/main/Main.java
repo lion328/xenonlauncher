@@ -6,7 +6,6 @@ import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.HttpsProtocolPatcher;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
@@ -23,9 +22,9 @@ import org.apache.http.protocol.HttpRequestHandler;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.regex.Pattern;
 
 public class Main {
 
@@ -33,16 +32,18 @@ public class Main {
         File basepath = new File("/home/lion328/.minecraft");
         File versions = new File(basepath, "versions");
         File libraries = new File(basepath, "libraries");
-        String id = "1.8.9-forge1.8.9-11.15.1.1847";
+        String id = "1.8.9";
 
         File jsonFile = new File(versions, id + "/" + id + ".json");
+
+        System.out.println(jsonFile.getAbsolutePath());
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(DependencyName.class, new DependencyNameTypeAdapter());
         Gson gson = gsonBuilder.create();
         GameVersion version = gson.fromJson(new FileReader(jsonFile), GameVersion.class);
-        GameVersion parent = gson.fromJson(new FileReader(new File(versions, "1.8.9/1.8.9.json")), GameVersion.class);
-        version = new MergedGameVersion(version, parent);
+        //GameVersion parent = gson.fromJson(new FileReader(new File(versions, "1.8.9/1.8.9.json")), GameVersion.class);
+        //version = new MergedGameVersion(version, parent);
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
         launcher.replaceArgument("auth_player_name", "lion328");
@@ -100,7 +101,7 @@ public class Main {
 
         //System.exit(0);
 
-        ServerSocket server = new ServerSocket(35565, 50, InetAddress.getLocalHost());
+        ServerSocket server = new ServerSocket(35565);
         ProxyServer proxy = new SOCKS5ProxyServer();
         proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler() {
 
@@ -126,10 +127,21 @@ public class Main {
                     return;
                 }*/
                 System.out.println("Request to " + httpRequest.getHeaders("Host")[0].getValue() + " " + httpRequest.getRequestLine().getUri());
-                httpResponse.setStatusCode(HttpStatus.SC_MOVED_PERMANENTLY);
-                httpResponse.addHeader("Location", httpRequest.getHeaders("Host")[0].getValue() + "/" + httpRequest.getRequestLine().getUri());
+
+                String host = httpRequest.getHeaders("Host")[0].getValue();
+                String uri = httpRequest.getRequestLine().getUri();
+
+                String url = host + uri;
+
+                Pattern pattern = Pattern.compile("^https?:\\/\\/(.*\\.)?(mojang\\.com|minecraft\\.net).*");
+
+                if (pattern.matcher(url).matches()) {
+                    httpResponse.setStatusCode(HttpStatus.SC_MOVED_PERMANENTLY);
+                    httpResponse.addHeader("Location", "https://" + url);
+                }
             }
         });
+        httpHandler.addHttpRequestHandler(Integer.MAX_VALUE, HttpDataHandler.STREAM_HANDLER);
         proxy.addDataHandler(0, httpHandler);
 
         System.out.println("Proxy broadcast at " + server.getInetAddress().getHostAddress() + ":" + server.getLocalPort());

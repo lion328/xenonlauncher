@@ -13,14 +13,14 @@ public class Address {
 
     public Address(AddressType type, byte[] ipAddr, String domainName) throws IOException {
         int ipLen = type == AddressType.IPV4 ? 4 : 16;
-        switch(type) {
+        switch (type) {
             case IPV4:
             case IPV6:
-                if(ipAddr == null || ipAddr.length != ipLen)
+                if (ipAddr == null || ipAddr.length != ipLen)
                     throw new IOException("Invalid IP address");
                 break;
             case DOMAINNAME:
-                if(domainName == null || domainName.length() > 0xFF)
+                if (domainName == null || domainName.length() > 0xFF)
                     throw new IOException("Invalid domain name");
                 break;
         }
@@ -30,14 +30,14 @@ public class Address {
 
         int i = 0;
         bArray = new byte[1 + (type == AddressType.DOMAINNAME ? domainName.length() + 1 : ipLen)];
-        bArray[i++] = (byte)(type.getByte() & 0xFF);
-        switch(type) {
+        bArray[i++] = (byte) (type.getByte() & 0xFF);
+        switch (type) {
             case IPV4:
             case IPV6:
                 System.arraycopy(ipAddr, 0, bArray, i, ipLen);
                 break;
             case DOMAINNAME:
-                bArray[i++] = (byte)(domainName.length() & 0xFF);
+                bArray[i++] = (byte) (domainName.length() & 0xFF);
                 System.arraycopy(domainName.toCharArray(), 0, bArray, i, domainName.length());
         }
     }
@@ -59,7 +59,7 @@ public class Address {
     }
 
     public InetAddress toInetAddress() throws IOException {
-        switch(type) {
+        switch (type) {
             case IPV4:
             case IPV6:
                 return InetAddress.getByAddress(ipAddr.clone());
@@ -72,7 +72,7 @@ public class Address {
     public static Address fromInetAddress(AddressType type, InetAddress address) throws IOException {
         byte[] ipAddr = null;
         String domainName = null;
-        switch(type) {
+        switch (type) {
             case IPV4:
             case IPV6:
                 ipAddr = address.getAddress();
@@ -88,7 +88,7 @@ public class Address {
         AddressType addressType = AddressType.getByByte(in.read());
 
         byte[] ip;
-        switch(addressType) {
+        switch (addressType) {
             case IPV4:
                 ip = new byte[4];
                 in.read(ip);
@@ -100,8 +100,8 @@ public class Address {
             case DOMAINNAME:
                 int len = in.read() & 0xFF;
                 StringBuilder sb = new StringBuilder();
-                for(int i = 0; i < len; i++)
-                    sb.append((char)(in.read() & 0xFF));
+                for (int i = 0; i < len; i++)
+                    sb.append((char) (in.read() & 0xFF));
                 return new Address(addressType, null, sb.toString());
         }
 

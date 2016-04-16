@@ -17,8 +17,8 @@ public enum AddressType {
     }
 
     public static AddressType getByByte(int b) {
-        for(AddressType type : values())
-            if(type.b == (b & 0xFF))
+        for (AddressType type : values())
+            if (type.b == (b & 0xFF))
                 return type;
         return null;
     }
