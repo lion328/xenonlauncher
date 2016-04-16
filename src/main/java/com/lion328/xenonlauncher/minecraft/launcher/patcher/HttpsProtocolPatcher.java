@@ -13,7 +13,7 @@ import java.util.List;
 
 public class HttpsProtocolPatcher implements LibraryPatcher {
 
-    public static final String HTTPS_PATTERN = "^https://";
+    public static final String HTTPS_PATTERN = "^https:\\/\\/";
 
     private String protocol;
 
