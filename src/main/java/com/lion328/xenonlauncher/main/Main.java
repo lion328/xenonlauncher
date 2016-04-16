@@ -8,6 +8,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
+import com.lion328.xenonlauncher.minecraft.launcher.patcher.HttpsProtocolPatcher;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.StreamDataHandler;
@@ -15,12 +16,14 @@ import com.lion328.xenonlauncher.proxy.socks5.SOCKS5ProxyServer;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -45,7 +48,23 @@ public class Main {
         launcher.replaceArgument("auth_player_name", "lion328");
         launcher.replaceArgument("auth_uuid", "f0e9f5b95ce74d3d9545f2013d23ace7");
         //launcher.replaceArgument("auth_access_token", "");
+
+        launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
+        launcher.addJVMArgument("-DsocksProxyPort=35565");
+
+        HttpsProtocolPatcher patcher = new HttpsProtocolPatcher("http");
+        DependencyName regex = new DependencyName("com\\.mojang:authlib:.*");
+        launcher.addPatcher(regex, patcher);
+
         final Process process = launcher.launch();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                process.destroy();
+            }
+        });
 
         new Thread() {
 
@@ -77,11 +96,11 @@ public class Main {
             }
         };
         td.start();
-        td.join();
+        //td.join();
 
-        System.exit(0);
+        //System.exit(0);
 
-        ServerSocket server = new ServerSocket(35565);
+        ServerSocket server = new ServerSocket(35565, 50, InetAddress.getLocalHost());
         ProxyServer proxy = new SOCKS5ProxyServer();
         proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler() {
 
@@ -102,11 +121,13 @@ public class Main {
 
             @Override
             public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException {
-                if (httpContext.getAttribute("sent-request") != Boolean.TRUE) {
+                /*if (httpContext.getAttribute("sent-request") != Boolean.TRUE) {
                     httpContext.setAttribute("need-original", true);
                     return;
-                }
+                }*/
                 System.out.println("Request to " + httpRequest.getHeaders("Host")[0].getValue() + " " + httpRequest.getRequestLine().getUri());
+                httpResponse.setStatusCode(HttpStatus.SC_MOVED_PERMANENTLY);
+                httpResponse.addHeader("Location", httpRequest.getHeaders("Host")[0].getValue() + "/" + httpRequest.getRequestLine().getUri());
             }
         });
         proxy.addDataHandler(0, httpHandler);

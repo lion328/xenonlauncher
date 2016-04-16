@@ -10,8 +10,18 @@ import com.lion328.xenonlauncher.minecraft.launcher.json.exception.MissingInform
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
 import com.lion328.xenonlauncher.util.FileUtil;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -139,7 +149,7 @@ public class JSONGameLauncher extends BasicGameLauncher {
         ByteArrayOutputStream byteTmp = new ByteArrayOutputStream();
 
         for (; (zipEntry = zipIn.getNextEntry()) != null; zipIn.closeEntry()) {
-            if (zipEntry.isDirectory() || zipEntry.getName().endsWith(".class"))
+            if (zipEntry.isDirectory() || (zipEntry.getName().startsWith("META-INF/")))
                 continue;
 
             byteTmp.reset();
@@ -158,6 +168,9 @@ public class JSONGameLauncher extends BasicGameLauncher {
                     depName.getName().matches(regexDepName.getName()) &&
                     depName.getVersion().matches(regexDepName.getVersion())) {
                 for (Map.Entry<String, byte[]> classEntry : classes.entrySet()) {
+                    if (!classEntry.getKey().endsWith(".class"))
+                        continue;
+
                     buffer = entry.getValue().patchClass(classEntry.getKey().replaceAll("\\.class$", "").replace('/', '.'), classEntry.getValue());
                     buffer = buffer.clone();
                     classEntry.setValue(buffer);
@@ -165,7 +178,9 @@ public class JSONGameLauncher extends BasicGameLauncher {
             }
         }
 
-        File outFile = new File(dir, depName.getShortName().replace(':', '-'));
+        File outFile = new File(dir, depName.getShortName().replace(':', '-') + ".jar");
+        if (!outFile.getParentFile().exists() && !outFile.getParentFile().mkdirs())
+            throw new IOException("Can't create directory");
 
         ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outFile));
 
@@ -248,7 +263,6 @@ public class JSONGameLauncher extends BasicGameLauncher {
     }
 
     private ProcessBuilder buildProcess(File nativesDir, File patchedLibDir) throws Exception {
-        System.out.println(buildProcessArgs(nativesDir, patchedLibDir));
         ProcessBuilder processBuilder = new ProcessBuilder(buildProcessArgs(nativesDir, patchedLibDir));
         processBuilder.directory(basepathDir);
         return processBuilder;

@@ -13,7 +13,7 @@ configurations {
 dependencies {
     provided 'com.google.code.gson:gson:2.6.2'
     provided 'org.apache.httpcomponents:httpcore:4.4.4'
-    provided 'org.apache.httpcomponents:httpclient:4.5.2'
+    provided 'org.ow2.asm:asm-all:5.1'
 }
 
 sourceCompatibility = '1.7'
