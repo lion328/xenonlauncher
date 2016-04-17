@@ -28,8 +28,8 @@ public class HttpDataHandler implements DataHandler {
 
         @Override
         public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException {
-            if (httpContext.getAttribute("send-request") != Boolean.TRUE)
-                httpContext.setAttribute("need-original", true);
+            if (httpContext.getAttribute("request.set") != Boolean.TRUE)
+                httpContext.setAttribute("response.need-original", true);
         }
     };
 
@@ -42,19 +42,22 @@ public class HttpDataHandler implements DataHandler {
     @Override
     public boolean process(Socket client, Socket server) throws Exception {
         InputStream clientIn = client.getInputStream();
-        clientIn.mark(8192);
+        clientIn.mark(65536);
 
         try {
             DefaultBHttpServerConnection httpClient = new DefaultBHttpServerConnection(8192);
             httpClient.bind(client);
+
             HttpRequest rawRequest = httpClient.receiveRequestHeader();
             HttpEntityEnclosingRequest request;
+
             if (rawRequest instanceof HttpEntityEnclosingRequest)
                 request = (HttpEntityEnclosingRequest) rawRequest;
             else {
                 request = new BasicHttpEntityEnclosingRequest(rawRequest.getRequestLine());
                 request.setHeaders(rawRequest.getAllHeaders());
             }
+
             httpClient.receiveRequestEntity(request);
 
             DefaultBHttpClientConnection httpServer = new DefaultBHttpClientConnection(8192);
@@ -62,12 +65,21 @@ public class HttpDataHandler implements DataHandler {
             HttpCoreContext context = HttpCoreContext.create();
             HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "OK"));
 
+            context.setAttribute("client.socket", client);
+            context.setAttribute("server.socket", server);
+
             boolean sent = false;
 
             for (Map.Entry<Integer, HttpRequestHandler> entry : handlers.entrySet()) {
                 entry.getValue().handle(request, response, context);
 
-                if (context.getAttribute("need-original") == Boolean.TRUE && !sent) {
+                if (context.getAttribute("response.set") instanceof HttpResponse)
+                    response = (HttpResponse) context.getAttribute("response.set");
+
+                if (context.getAttribute("pipeline.end") == Boolean.TRUE)
+                    break;
+
+                if (context.getAttribute("response.need-original") == Boolean.TRUE && !sent) {
                     httpServer.bind(server);
                     httpServer.sendRequestHeader(request);
                     httpServer.sendRequestEntity(request);
@@ -76,15 +88,19 @@ public class HttpDataHandler implements DataHandler {
 
                     entry.getValue().handle(request, response, context);
 
-                    context.removeAttribute("need-original");
-                    context.setAttribute("sent-request", true);
+                    context.removeAttribute("response.need-original");
+                    context.setAttribute("request.sent", true);
 
                     sent = true;
                 }
             }
 
-            httpClient.sendResponseHeader(response);
-            httpClient.sendResponseEntity(response);
+            if (context.getAttribute("response.sent") != Boolean.TRUE) {
+                httpClient.sendResponseHeader(response);
+
+                if (response.getEntity() != null)
+                    httpClient.sendResponseEntity(response);
+            }
 
             return true;
         } catch (ProtocolException e) {

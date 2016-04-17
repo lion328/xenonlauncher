@@ -1,4 +1,4 @@
-package com.lion328.xenonlauncher.proxy;
+package com.lion328.xenonlauncher.proxy.util;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

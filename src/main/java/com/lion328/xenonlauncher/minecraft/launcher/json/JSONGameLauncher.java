@@ -39,7 +39,7 @@ public class JSONGameLauncher extends BasicGameLauncher {
     private File versionsDir;
 
     public JSONGameLauncher(GameVersion version, File basepathDir) throws LauncherVersionException {
-        if (version.getMinimumLauncherVersion() != GameVersion.PARSER_VERSION)
+        if (version.getMinimumLauncherVersion() > GameVersion.PARSER_VERSION)
             throw new LauncherVersionException("Unsupported launcher version (" + version.getMinimumLauncherVersion() + ")");
 
         versionInfo = version;

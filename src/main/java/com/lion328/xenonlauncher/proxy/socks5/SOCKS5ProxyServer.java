@@ -1,8 +1,8 @@
 package com.lion328.xenonlauncher.proxy.socks5;
 
-import com.lion328.xenonlauncher.proxy.BufferedSocket;
 import com.lion328.xenonlauncher.proxy.DataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
+import com.lion328.xenonlauncher.proxy.util.BufferedSocket;
 import com.lion328.xenonlauncher.proxy.util.StreamUtil;
 
 import java.io.IOException;
