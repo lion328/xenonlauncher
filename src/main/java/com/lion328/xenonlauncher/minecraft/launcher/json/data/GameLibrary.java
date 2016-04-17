@@ -5,7 +5,8 @@ import com.lion328.xenonlauncher.util.OS;
 
 import java.util.List;
 
-public class GameLibrary {
+public class GameLibrary
+{
 
     @SerializedName("name")
     private DependencyName name;
@@ -18,11 +19,13 @@ public class GameLibrary {
     @SerializedName("downloads")
     private LibraryDownloadInfomation downloadInfo;
 
-    public GameLibrary() {
+    public GameLibrary()
+    {
 
     }
 
-    public GameLibrary(DependencyName name, List<LibraryRule> rules, LibraryNatives natives, ExtractRule extractRule, LibraryDownloadInfomation downloadInfo) {
+    public GameLibrary(DependencyName name, List<LibraryRule> rules, LibraryNatives natives, ExtractRule extractRule, LibraryDownloadInfomation downloadInfo)
+    {
         this.name = name;
         this.rules = rules;
         this.natives = natives;
@@ -30,45 +33,60 @@ public class GameLibrary {
         this.downloadInfo = downloadInfo;
     }
 
-    public DependencyName getDependencyName() {
+    public DependencyName getDependencyName()
+    {
         return name;
     }
 
-    public List<LibraryRule> getRules() {
+    public List<LibraryRule> getRules()
+    {
         return rules;
     }
 
-    public LibraryNatives getNatives() {
+    public LibraryNatives getNatives()
+    {
         return natives;
     }
 
-    public ExtractRule getExtractRule() {
+    public ExtractRule getExtractRule()
+    {
         return extractRule;
     }
 
-    public LibraryDownloadInfomation getDownloadInfo() {
+    public LibraryDownloadInfomation getDownloadInfo()
+    {
         return downloadInfo;
     }
 
-    public boolean isNativesLibrary() {
+    public boolean isNativesLibrary()
+    {
         return natives != null;
     }
 
-    public boolean isJavaLibrary() {
+    public boolean isJavaLibrary()
+    {
         return !isNativesLibrary() || (downloadInfo != null && downloadInfo.getArtifactInfo() != null);
     }
 
-    public boolean isAllowed(OS os, String version) {
+    public boolean isAllowed(OS os, String version)
+    {
         if (rules == null)
+        {
             return true;
+        }
 
         for (LibraryRule rule : rules)
+        {
             if (!rule.isAllowed(os, version))
+            {
                 return false;
+            }
+        }
         return true;
     }
 
-    public boolean isAllowed() {
+    public boolean isAllowed()
+    {
         return isAllowed(OS.getCurrentOS(), OS.getCurrentVersion());
     }
 }

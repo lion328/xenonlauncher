@@ -15,7 +15,8 @@ import java.net.SocketTimeoutException;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class SOCKS5ProxyServer implements ProxyServer {
+public class SOCKS5ProxyServer implements ProxyServer
+{
 
     public static final int VERSION = 0x05;
 
@@ -23,12 +24,14 @@ public class SOCKS5ProxyServer implements ProxyServer {
     private ServerSocket serverSocket;
     private TreeMap<Integer, DataHandler> handlers;
 
-    public SOCKS5ProxyServer() {
+    public SOCKS5ProxyServer()
+    {
         running = false;
         handlers = new TreeMap<>();
     }
 
-    private void processRequest(Socket socket) throws Exception {
+    private void processRequest(Socket socket) throws Exception
+    {
         InputStream in = socket.getInputStream();
         OutputStream out = socket.getOutputStream();
 
@@ -36,17 +39,24 @@ public class SOCKS5ProxyServer implements ProxyServer {
         greetingReq.read(in);
 
         if (greetingReq.getVersion() != VERSION)
+        {
             throw new IOException("Version mismatch");
+        }
 
         AuthenticationMethod noAuth = null;
         for (AuthenticationMethod method : greetingReq.getAvailableAuthenticationMethods())
-            if (method == AuthenticationMethod.NO_AUTHENTICATION_REQUIRED) {
+        {
+            if (method == AuthenticationMethod.NO_AUTHENTICATION_REQUIRED)
+            {
                 noAuth = method;
                 break;
             }
+        }
 
         if (noAuth == null)
+        {
             throw new IOException("No supported authentication method available");
+        }
 
         new GreetingResponsePacket(VERSION, noAuth).write(out);
 
@@ -54,14 +64,18 @@ public class SOCKS5ProxyServer implements ProxyServer {
         connectReq.read(in);
 
         if (connectReq.getVersion() != VERSION)
+        {
             throw new IOException("Version mismatch");
+        }
 
-        if (connectReq.getAddress().getType() == AddressType.IPV6) {
+        if (connectReq.getAddress().getType() == AddressType.IPV6)
+        {
             new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.ADDRESS_TYPE_NOT_SUPPORTED, connectReq.getAddress(), connectReq.getPort()).write(out);
             return;
         }
 
-        switch (connectReq.getCommand()) {
+        switch (connectReq.getCommand())
+        {
             case CONNECT:
                 handleConnect(connectReq, socket);
                 break;
@@ -75,20 +89,26 @@ public class SOCKS5ProxyServer implements ProxyServer {
         }
     }
 
-    private void handleConnect(ConnectRequestPacket connectReq, Socket socket) throws Exception {
+    private void handleConnect(ConnectRequestPacket connectReq, Socket socket) throws Exception
+    {
         InetAddress addr = connectReq.getAddress().toInetAddress();
         Socket connSocket = new BufferedSocket(new Socket(addr, connectReq.getPort()));
 
         new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.SUCCEEDED, Address.fromInetAddress(AddressType.IPV4, socket.getInetAddress()), socket.getPort()).write(socket.getOutputStream());
 
         for (Map.Entry<Integer, DataHandler> entry : handlers.entrySet())
+        {
             if (entry.getValue().process(socket, connSocket))
+            {
                 break;
+            }
+        }
 
         connSocket.close();
     }
 
-    private void handleBind(ConnectRequestPacket connectReq, Socket socket) throws IOException {
+    private void handleBind(ConnectRequestPacket connectReq, Socket socket) throws IOException
+    {
         Socket connSocket;
         InetAddress targetAddress = connectReq.getAddress().toInetAddress();
         ServerSocket server = new ServerSocket(0, 10, InetAddress.getLocalHost());
@@ -96,18 +116,26 @@ public class SOCKS5ProxyServer implements ProxyServer {
 
         new ConnectResponsePacket(VERSION, ConnectResponsePacket.State.SUCCEEDED, Address.fromInetAddress(AddressType.IPV4, server.getInetAddress()), server.getLocalPort()).write(socket.getOutputStream());
 
-        while (true) {
+        while (true)
+        {
             connSocket = null;
-            try {
+            try
+            {
                 connSocket = new BufferedSocket(server.accept());
-            } catch (SocketTimeoutException e) {
+            }
+            catch (SocketTimeoutException e)
+            {
                 break;
             }
-            if (connSocket.getInetAddress().equals(targetAddress) && connSocket.getPort() == connectReq.getPort()) {
+            if (connSocket.getInetAddress().equals(targetAddress) && connSocket.getPort() == connectReq.getPort())
+            {
                 server.close();
                 break;
-            } else
+            }
+            else
+            {
                 connSocket.close();
+            }
         }
 
         ConnectResponsePacket.State state = connSocket == null ? ConnectResponsePacket.State.TTL_EXPIRED : ConnectResponsePacket.State.SUCCEEDED;
@@ -120,19 +148,29 @@ public class SOCKS5ProxyServer implements ProxyServer {
     }
 
     @Override
-    public void start(ServerSocket server) throws IOException {
-        if (running) return;
+    public void start(ServerSocket server) throws IOException
+    {
+        if (running)
+        {
+            return;
+        }
         running = true;
         serverSocket = server;
-        while (running) {
+        while (running)
+        {
             final Socket socket = new BufferedSocket(serverSocket.accept());
-            new Thread() {
+            new Thread()
+            {
 
-                public void run() {
-                    try {
+                public void run()
+                {
+                    try
+                    {
                         processRequest(socket);
                         socket.close();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         e.printStackTrace();
                     }
                 }
@@ -141,12 +179,14 @@ public class SOCKS5ProxyServer implements ProxyServer {
     }
 
     @Override
-    public void stop() {
+    public void stop()
+    {
         running = false;
     }
 
     @Override
-    public void addDataHandler(int level, DataHandler handler) {
+    public void addDataHandler(int level, DataHandler handler)
+    {
         handlers.put(level, handler);
     }
 }

@@ -1,6 +1,7 @@
 package com.lion328.xenonlauncher.proxy.socks5;
 
-public enum AuthenticationMethod {
+public enum AuthenticationMethod
+{
 
     NO_AUTHENTICATION_REQUIRED(0x00),
     GSSAPI(0x01),
@@ -10,18 +11,25 @@ public enum AuthenticationMethod {
 
     private int b;
 
-    AuthenticationMethod(int b) {
+    AuthenticationMethod(int b)
+    {
         this.b = b;
     }
 
-    public int getByte() {
-        return b & 0xFF;
+    public static AuthenticationMethod getByByte(int b)
+    {
+        for (AuthenticationMethod method : values())
+        {
+            if (method.b == (b & 0xFF))
+            {
+                return method;
+            }
+        }
+        return UNKNOWN;
     }
 
-    public static AuthenticationMethod getByByte(int b) {
-        for (AuthenticationMethod method : values())
-            if (method.b == (b & 0xFF))
-                return method;
-        return UNKNOWN;
+    public int getByte()
+    {
+        return b & 0xFF;
     }
 }

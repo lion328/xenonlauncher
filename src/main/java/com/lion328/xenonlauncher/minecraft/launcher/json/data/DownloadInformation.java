@@ -4,7 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.net.URL;
 
-public class DownloadInformation {
+public class DownloadInformation
+{
 
     @SerializedName("url")
     private URL url;
@@ -13,25 +14,30 @@ public class DownloadInformation {
     @SerializedName("size")
     private int sizeInBytes;
 
-    public DownloadInformation() {
+    public DownloadInformation()
+    {
 
     }
 
-    public DownloadInformation(URL url, String sha1Hash, int sizeInBytes) {
+    public DownloadInformation(URL url, String sha1Hash, int sizeInBytes)
+    {
         this.url = url;
         this.sha1Hash = sha1Hash;
         this.sizeInBytes = sizeInBytes;
     }
 
-    public URL getURL() {
+    public URL getURL()
+    {
         return url;
     }
 
-    public String getSHA1Hash() {
+    public String getSHA1Hash()
+    {
         return sha1Hash;
     }
 
-    public int getSizeInBytes() {
+    public int getSizeInBytes()
+    {
         return sizeInBytes;
     }
 }

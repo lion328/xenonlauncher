@@ -6,7 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class GameVersion {
+public class GameVersion
+{
 
     public static final int PARSER_VERSION = 18;
 
@@ -35,11 +36,13 @@ public class GameVersion {
     @SerializedName("inheritsFrom")
     private String parentId;
 
-    public GameVersion() {
+    public GameVersion()
+    {
 
     }
 
-    public GameVersion(String id, Date time, Date releaseTime, ReleaseType releaseType, String minecraftArguments, List<GameLibrary> libraries, String mainClass, int version, String assets, Map<String, DownloadInformation> downloads, AssetInformation assetInformation, String parentId) {
+    public GameVersion(String id, Date time, Date releaseTime, ReleaseType releaseType, String minecraftArguments, List<GameLibrary> libraries, String mainClass, int version, String assets, Map<String, DownloadInformation> downloads, AssetInformation assetInformation, String parentId)
+    {
         this.id = id;
         this.time = time;
         this.releaseTime = releaseTime;
@@ -54,51 +57,63 @@ public class GameVersion {
         this.parentId = parentId;
     }
 
-    public String getID() {
+    public String getID()
+    {
         return id;
     }
 
-    public Date getTime() {
+    public Date getTime()
+    {
         return time;
     }
 
-    public Date getReleaseTime() {
+    public Date getReleaseTime()
+    {
         return releaseTime;
     }
 
-    public ReleaseType getReleaseType() {
+    public ReleaseType getReleaseType()
+    {
         return releaseType;
     }
 
-    public String getMinecraftArguments() {
+    public String getMinecraftArguments()
+    {
         return minecraftArguments;
     }
 
-    public List<GameLibrary> getLibraries() {
+    public List<GameLibrary> getLibraries()
+    {
         return libraries;
     }
 
-    public String getMainClass() {
+    public String getMainClass()
+    {
         return mainClass;
     }
 
-    public int getMinimumLauncherVersion() {
+    public int getMinimumLauncherVersion()
+    {
         return version;
     }
 
-    public String getAssets() {
+    public String getAssets()
+    {
         return assets;
     }
 
-    public Map<String, DownloadInformation> getDownloadsInformation() {
+    public Map<String, DownloadInformation> getDownloadsInformation()
+    {
         return downloads;
     }
 
-    public AssetInformation getAssetInformation() {
+    public AssetInformation getAssetInformation()
+    {
         return assetInformation;
     }
 
-    public String getParentID() {
+    public String getParentID()
+    {
         return parentId;
     }
 }

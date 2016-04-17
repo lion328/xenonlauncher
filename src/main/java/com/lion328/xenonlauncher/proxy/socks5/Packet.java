@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface Packet {
+public interface Packet
+{
 
     void read(InputStream in) throws IOException;
 

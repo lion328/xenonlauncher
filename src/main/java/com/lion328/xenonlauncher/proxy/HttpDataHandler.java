@@ -22,29 +22,37 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class HttpDataHandler implements DataHandler {
+public class HttpDataHandler implements DataHandler
+{
 
-    public static final HttpRequestHandler STREAM_HANDLER = new HttpRequestHandler() {
+    public static final HttpRequestHandler STREAM_HANDLER = new HttpRequestHandler()
+    {
 
         @Override
-        public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException {
+        public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException
+        {
             if (httpContext.getAttribute("request.set") != Boolean.TRUE)
+            {
                 httpContext.setAttribute("response.need-original", true);
+            }
         }
     };
 
     private Map<Integer, HttpRequestHandler> handlers = new TreeMap<>();
 
-    public void addHttpRequestHandler(int level, HttpRequestHandler handler) {
+    public void addHttpRequestHandler(int level, HttpRequestHandler handler)
+    {
         handlers.put(level, handler);
     }
 
     @Override
-    public boolean process(Socket client, Socket server) throws Exception {
+    public boolean process(Socket client, Socket server) throws Exception
+    {
         InputStream clientIn = client.getInputStream();
         clientIn.mark(65536);
 
-        try {
+        try
+        {
             DefaultBHttpServerConnection httpClient = new DefaultBHttpServerConnection(8192);
             httpClient.bind(client);
 
@@ -52,8 +60,11 @@ public class HttpDataHandler implements DataHandler {
             HttpEntityEnclosingRequest request;
 
             if (rawRequest instanceof HttpEntityEnclosingRequest)
+            {
                 request = (HttpEntityEnclosingRequest) rawRequest;
-            else {
+            }
+            else
+            {
                 request = new BasicHttpEntityEnclosingRequest(rawRequest.getRequestLine());
                 request.setHeaders(rawRequest.getAllHeaders());
             }
@@ -70,16 +81,22 @@ public class HttpDataHandler implements DataHandler {
 
             boolean sent = false;
 
-            for (Map.Entry<Integer, HttpRequestHandler> entry : handlers.entrySet()) {
+            for (Map.Entry<Integer, HttpRequestHandler> entry : handlers.entrySet())
+            {
                 entry.getValue().handle(request, response, context);
 
                 if (context.getAttribute("response.set") instanceof HttpResponse)
+                {
                     response = (HttpResponse) context.getAttribute("response.set");
+                }
 
                 if (context.getAttribute("pipeline.end") == Boolean.TRUE)
+                {
                     break;
+                }
 
-                if (context.getAttribute("response.need-original") == Boolean.TRUE && !sent) {
+                if (context.getAttribute("response.need-original") == Boolean.TRUE && !sent)
+                {
                     httpServer.bind(server);
                     httpServer.sendRequestHeader(request);
                     httpServer.sendRequestEntity(request);
@@ -95,18 +112,25 @@ public class HttpDataHandler implements DataHandler {
                 }
             }
 
-            if (context.getAttribute("response.sent") != Boolean.TRUE) {
+            if (context.getAttribute("response.sent") != Boolean.TRUE)
+            {
                 httpClient.sendResponseHeader(response);
 
                 if (response.getEntity() != null)
+                {
                     httpClient.sendResponseEntity(response);
+                }
             }
 
             return true;
-        } catch (ProtocolException e) {
+        }
+        catch (ProtocolException e)
+        {
             clientIn.reset();
             return false;
-        } catch (ConnectionClosedException e) {
+        }
+        catch (ConnectionClosedException e)
+        {
             return true;
         }
     }

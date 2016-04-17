@@ -3,7 +3,8 @@ package com.lion328.xenonlauncher.proxy;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public interface ProxyServer {
+public interface ProxyServer
+{
 
     void start(ServerSocket server) throws IOException;
 

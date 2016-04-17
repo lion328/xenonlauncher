@@ -3,7 +3,8 @@ package com.lion328.xenonlauncher.minecraft.launcher.json.data;
 import com.google.gson.annotations.SerializedName;
 import com.lion328.xenonlauncher.util.OS;
 
-public class LibraryNatives {
+public class LibraryNatives
+{
 
     @SerializedName("linux")
     private String linux;
@@ -12,15 +13,18 @@ public class LibraryNatives {
     @SerializedName("windows")
     private String windows;
 
-    public LibraryNatives(String linux, String osx, String windows) {
+    public LibraryNatives(String linux, String osx, String windows)
+    {
         this.linux = linux;
         this.osx = osx;
         this.windows = windows;
     }
 
-    public String getNative(OS os, String arch) {
+    public String getNative(OS os, String arch)
+    {
         String s;
-        switch (os) {
+        switch (os)
+        {
             default:
             case LINUX:
                 s = linux;
@@ -35,7 +39,8 @@ public class LibraryNatives {
         return s.replace("${arch}", arch);
     }
 
-    public String getNative() {
+    public String getNative()
+    {
         return getNative(OS.getCurrentOS(), OS.getCurrentArchitecture());
     }
 }

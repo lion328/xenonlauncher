@@ -28,9 +28,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
-public class Main {
+public class Main
+{
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception
+    {
 
         String s = "http://sessionserver.mojang.com";
         Pattern pattern = Pattern.compile("^https?:\\/\\/(.*\\.)?(mojang\\.com|minecraft\\.net).*");
@@ -38,12 +40,14 @@ public class Main {
 
         final ServerSocket server = new ServerSocket(35565);
         final ProxyServer proxy = new SOCKS5ProxyServer();
-        proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler() {
+        proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler()
+        {
 
             private int count = 0;
 
             @Override
-            public boolean process(Socket a, Socket b) throws IOException {
+            public boolean process(Socket a, Socket b) throws IOException
+            {
                 int i = count++;
                 System.out.println("Streaming #" + i);
                 boolean out = super.process(a, b);
@@ -53,17 +57,21 @@ public class Main {
             }
         });
         HttpDataHandler httpHandler = new HttpDataHandler();
-        httpHandler.addHttpRequestHandler(0, new HttpRequestHandler() {
+        httpHandler.addHttpRequestHandler(0, new HttpRequestHandler()
+        {
 
             @Override
-            public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException {
+            public void handle(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws HttpException, IOException
+            {
                 String host = httpRequest.getHeaders("Host")[0].getValue();
                 String uri = httpRequest.getRequestLine().getUri();
                 String path = host + uri;
                 String completeUri = "http://" + path;
 
                 if (!host.equals("sessionserver.mojang.com"))
+                {
                     return;
+                }
 
                 final Socket serverConnection = SSLSocketFactory.getDefault().createSocket(host, 443);
                 final Socket clientConnection = (Socket) httpContext.getAttribute("client.socket");
@@ -72,18 +80,22 @@ public class Main {
 
                 System.out.println("Start streaming " + completeUri);
 
-                StreamUtil.pipeStreamThread(clientConnection.getInputStream(), new OutputStream() {
+                StreamUtil.pipeStreamThread(clientConnection.getInputStream(), new OutputStream()
+                {
 
                     @Override
-                    public void write(int i) throws IOException {
+                    public void write(int i) throws IOException
+                    {
                         serverConnection.getOutputStream().write(i);
                         System.out.write(i);
                     }
                 });
-                StreamUtil.pipeStream(serverConnection.getInputStream(), new OutputStream() {
+                StreamUtil.pipeStream(serverConnection.getInputStream(), new OutputStream()
+                {
 
                     @Override
-                    public void write(int i) throws IOException {
+                    public void write(int i) throws IOException
+                    {
                         clientConnection.getOutputStream().write(i);
                         System.out.write(i);
                     }
@@ -182,30 +194,44 @@ public class Main {
 
         final Process process = launcher.launch();
 
-        new Thread() {
+        new Thread()
+        {
 
             @Override
-            public void run() {
+            public void run()
+            {
                 int b;
-                try {
+                try
+                {
                     while ((b = process.getErrorStream().read()) != -1)
+                    {
                         System.err.write(b);
-                } catch (IOException e) {
+                    }
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                     e.printStackTrace();
                 }
             }
         }.start();
 
-        Thread td = new Thread() {
+        Thread td = new Thread()
+        {
 
             @Override
-            public void run() {
+            public void run()
+            {
                 int b;
-                try {
+                try
+                {
                     while ((b = process.getInputStream().read()) != -1)
+                    {
                         System.out.write(b);
-                } catch (IOException e) {
+                    }
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                     e.printStackTrace();
                 }
@@ -216,10 +242,12 @@ public class Main {
 
         //System.exit(0);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
 
             @Override
-            public void run() {
+            public void run()
+            {
                 process.destroy();
                 proxy.stop();
             }

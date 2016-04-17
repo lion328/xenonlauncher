@@ -4,24 +4,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 
-public class Address {
+public class Address
+{
 
     private final AddressType type;
     private final byte[] ipAddr;
     private final String domainName;
     private final byte[] bArray;
 
-    public Address(AddressType type, byte[] ipAddr, String domainName) throws IOException {
+    public Address(AddressType type, byte[] ipAddr, String domainName) throws IOException
+    {
         int ipLen = type == AddressType.IPV4 ? 4 : 16;
-        switch (type) {
+        switch (type)
+        {
             case IPV4:
             case IPV6:
                 if (ipAddr == null || ipAddr.length != ipLen)
+                {
                     throw new IOException("Invalid IP address");
+                }
                 break;
             case DOMAINNAME:
                 if (domainName == null || domainName.length() > 0xFF)
+                {
                     throw new IOException("Invalid domain name");
+                }
                 break;
         }
         this.type = type;
@@ -31,7 +38,8 @@ public class Address {
         int i = 0;
         bArray = new byte[1 + (type == AddressType.DOMAINNAME ? domainName.length() + 1 : ipLen)];
         bArray[i++] = (byte) (type.getByte() & 0xFF);
-        switch (type) {
+        switch (type)
+        {
             case IPV4:
             case IPV6:
                 System.arraycopy(ipAddr, 0, bArray, i, ipLen);
@@ -42,37 +50,12 @@ public class Address {
         }
     }
 
-    public AddressType getType() {
-        return type;
-    }
-
-    public byte[] getIPAddress() {
-        return ipAddr.clone();
-    }
-
-    public String getDomainName() {
-        return domainName;
-    }
-
-    public byte[] toByteArray() {
-        return bArray.clone();
-    }
-
-    public InetAddress toInetAddress() throws IOException {
-        switch (type) {
-            case IPV4:
-            case IPV6:
-                return InetAddress.getByAddress(ipAddr.clone());
-            case DOMAINNAME:
-                return InetAddress.getByName(domainName);
-        }
-        return null;
-    }
-
-    public static Address fromInetAddress(AddressType type, InetAddress address) throws IOException {
+    public static Address fromInetAddress(AddressType type, InetAddress address) throws IOException
+    {
         byte[] ipAddr = null;
         String domainName = null;
-        switch (type) {
+        switch (type)
+        {
             case IPV4:
             case IPV6:
                 ipAddr = address.getAddress();
@@ -84,11 +67,13 @@ public class Address {
         return new Address(type, ipAddr, domainName);
     }
 
-    public static Address fromInputStream(InputStream in) throws IOException {
+    public static Address fromInputStream(InputStream in) throws IOException
+    {
         AddressType addressType = AddressType.getByByte(in.read());
 
         byte[] ip;
-        switch (addressType) {
+        switch (addressType)
+        {
             case IPV4:
                 ip = new byte[4];
                 in.read(ip);
@@ -101,10 +86,45 @@ public class Address {
                 int len = in.read() & 0xFF;
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < len; i++)
+                {
                     sb.append((char) (in.read() & 0xFF));
+                }
                 return new Address(addressType, null, sb.toString());
         }
 
+        return null;
+    }
+
+    public AddressType getType()
+    {
+        return type;
+    }
+
+    public byte[] getIPAddress()
+    {
+        return ipAddr.clone();
+    }
+
+    public String getDomainName()
+    {
+        return domainName;
+    }
+
+    public byte[] toByteArray()
+    {
+        return bArray.clone();
+    }
+
+    public InetAddress toInetAddress() throws IOException
+    {
+        switch (type)
+        {
+            case IPV4:
+            case IPV6:
+                return InetAddress.getByAddress(ipAddr.clone());
+            case DOMAINNAME:
+                return InetAddress.getByName(domainName);
+        }
         return null;
     }
 }

@@ -3,7 +3,8 @@ package com.lion328.xenonlauncher.minecraft.launcher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
 
-public interface GameLauncher {
+public interface GameLauncher
+{
 
     Process launch() throws Exception;
 

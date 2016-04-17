@@ -4,7 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.net.URL;
 
-public class AssetInformation extends DownloadInformation {
+public class AssetInformation extends DownloadInformation
+{
 
     @SerializedName("totalSize")
     private int totalSizeInBytes;
@@ -13,21 +14,25 @@ public class AssetInformation extends DownloadInformation {
     @SerializedName("known")
     private boolean knownSizeAndHash = false;
 
-    public AssetInformation(int totalSizeInBytes, String id, URL url, String sha1Hash, int sizeInBytes) {
+    public AssetInformation(int totalSizeInBytes, String id, URL url, String sha1Hash, int sizeInBytes)
+    {
         super(url, sha1Hash, sizeInBytes);
 
         knownSizeAndHash = true;
     }
 
-    public int getTotalSizeInBytes() {
+    public int getTotalSizeInBytes()
+    {
         return totalSizeInBytes;
     }
 
-    public String getID() {
+    public String getID()
+    {
         return id;
     }
 
-    public boolean isKnownSizeAndHash() {
+    public boolean isKnownSizeAndHash()
+    {
         return knownSizeAndHash;
     }
 }
