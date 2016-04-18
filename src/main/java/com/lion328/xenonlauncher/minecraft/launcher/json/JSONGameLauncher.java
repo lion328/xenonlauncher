@@ -86,12 +86,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     private File getDependencyFile(DependencyName name, String prefix)
     {
-        String path = name.getPackageName().replace('.', '/') + "/" +
-                name.getName() + "/" +
-                name.getVersion() + "/" +
-                name.getName() + "-" + name.getVersion() + prefix + ".jar";
-
-        return new File(librariesDir, path);
+        return name.getFile(librariesDir, prefix, ".jar");
     }
 
     private void extractNatives(File nativesDir) throws IOException

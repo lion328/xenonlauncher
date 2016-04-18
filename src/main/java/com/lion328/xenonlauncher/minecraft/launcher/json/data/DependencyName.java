@@ -1,5 +1,7 @@
 package com.lion328.xenonlauncher.minecraft.launcher.json.data;
 
+import java.io.File;
+
 public class DependencyName
 {
 
@@ -26,6 +28,26 @@ public class DependencyName
         packageName = list[0];
         name = list[1];
         version = list[2];
+    }
+
+    public File getFile(File librariesDir)
+    {
+        return getFile(librariesDir, "");
+    }
+
+    public File getFile(File librariesDir, String prefix)
+    {
+        return getFile(librariesDir, prefix, ".jar");
+    }
+
+    public File getFile(File librariesDir, String prefix, String extension)
+    {
+        String path = packageName.replace('.', '/') + "/" +
+                name + "/" +
+                version + "/" +
+                name + "-" + version + prefix + "." + extension;
+
+        return new File(librariesDir, path);
     }
 
     public String getShortName()
