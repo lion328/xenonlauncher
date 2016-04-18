@@ -38,7 +38,20 @@ public class HttpDataHandler implements DataHandler
         }
     };
 
+    public static final int SOCKET_TIMEOUT = 60 * 1000;
+
+    private final int timeout;
     private Map<Integer, HttpRequestHandler> handlers = new TreeMap<>();
+
+    public HttpDataHandler()
+    {
+        this(SOCKET_TIMEOUT);
+    }
+
+    public HttpDataHandler(int timeout)
+    {
+        this.timeout = timeout;
+    }
 
     public void addHttpRequestHandler(int level, HttpRequestHandler handler)
     {
@@ -55,72 +68,78 @@ public class HttpDataHandler implements DataHandler
         {
             DefaultBHttpServerConnection httpClient = new DefaultBHttpServerConnection(8192);
             httpClient.bind(client);
-
-            HttpRequest rawRequest = httpClient.receiveRequestHeader();
-            HttpEntityEnclosingRequest request;
-
-            if (rawRequest instanceof HttpEntityEnclosingRequest)
-            {
-                request = (HttpEntityEnclosingRequest) rawRequest;
-            }
-            else
-            {
-                request = new BasicHttpEntityEnclosingRequest(rawRequest.getRequestLine());
-                request.setHeaders(rawRequest.getAllHeaders());
-            }
-
-            httpClient.receiveRequestEntity(request);
+            httpClient.setSocketTimeout(timeout);
 
             DefaultBHttpClientConnection httpServer = new DefaultBHttpClientConnection(8192);
+            httpServer.bind(server);
 
             HttpCoreContext context = HttpCoreContext.create();
-            HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "OK"));
-
             context.setAttribute("client.socket", client);
             context.setAttribute("server.socket", server);
 
-            boolean sent = false;
+            HttpEntityEnclosingRequest request;
 
-            for (Map.Entry<Integer, HttpRequestHandler> entry : handlers.entrySet())
+            do
             {
-                entry.getValue().handle(request, response, context);
+                HttpRequest rawRequest = httpClient.receiveRequestHeader();
 
-                if (context.getAttribute("response.set") instanceof HttpResponse)
+                if (rawRequest instanceof HttpEntityEnclosingRequest)
                 {
-                    response = (HttpResponse) context.getAttribute("response.set");
+                    request = (HttpEntityEnclosingRequest) rawRequest;
+                }
+                else
+                {
+                    request = new BasicHttpEntityEnclosingRequest(rawRequest.getRequestLine());
+                    request.setHeaders(rawRequest.getAllHeaders());
                 }
 
-                if (context.getAttribute("pipeline.end") == Boolean.TRUE)
-                {
-                    break;
-                }
+                httpClient.receiveRequestEntity(request);
 
-                if (context.getAttribute("response.need-original") == Boolean.TRUE && !sent)
-                {
-                    httpServer.bind(server);
-                    httpServer.sendRequestHeader(request);
-                    httpServer.sendRequestEntity(request);
-                    response = httpServer.receiveResponseHeader();
-                    httpServer.receiveResponseEntity(response);
+                HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "OK"));
 
+                boolean sent = false;
+
+                for (Map.Entry<Integer, HttpRequestHandler> entry : handlers.entrySet())
+                {
                     entry.getValue().handle(request, response, context);
 
-                    context.removeAttribute("response.need-original");
-                    context.setAttribute("request.sent", true);
+                    if (context.getAttribute("response.set") instanceof HttpResponse)
+                    {
+                        response = (HttpResponse) context.getAttribute("response.set");
+                    }
 
-                    sent = true;
+                    if (context.getAttribute("pipeline.end") == Boolean.TRUE)
+                    {
+                        break;
+                    }
+
+                    if (context.getAttribute("response.need-original") == Boolean.TRUE && !sent)
+                    {
+                        httpServer.sendRequestHeader(request);
+                        httpServer.sendRequestEntity(request);
+                        response = httpServer.receiveResponseHeader();
+                        httpServer.receiveResponseEntity(response);
+
+                        entry.getValue().handle(request, response, context);
+
+                        context.removeAttribute("response.need-original");
+                        context.setAttribute("request.sent", true);
+
+                        sent = true;
+                    }
                 }
-            }
 
-            if (context.getAttribute("response.sent") != Boolean.TRUE)
-            {
-                httpClient.sendResponseHeader(response);
-
-                if (response.getEntity() != null)
+                if (context.getAttribute("response.sent") != Boolean.TRUE)
                 {
-                    httpClient.sendResponseEntity(response);
+                    httpClient.sendResponseHeader(response);
+
+                    if (response.getEntity() != null)
+                    {
+                        httpClient.sendResponseEntity(response);
+                    }
                 }
             }
+            while (request.getFirstHeader("Connection").getValue().equals("keep-alive"));
 
             return true;
         }
