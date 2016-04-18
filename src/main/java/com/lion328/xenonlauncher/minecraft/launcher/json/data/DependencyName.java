@@ -37,7 +37,7 @@ public class DependencyName
 
     public File getFile(File librariesDir, String prefix)
     {
-        return getFile(librariesDir, prefix, ".jar");
+        return getFile(librariesDir, prefix, "jar");
     }
 
     public File getFile(File librariesDir, String prefix, String extension)
