@@ -15,6 +15,7 @@ public class HttpsProtocolPatcher implements LibraryPatcher
 {
 
     public static final String HTTPS_PATTERN = "^https:\\/\\/";
+    public static final String HTTPS_STRING = "https://";
 
     private String protocol;
 
@@ -29,8 +30,13 @@ public class HttpsProtocolPatcher implements LibraryPatcher
     }
 
     @Override
-    public byte[] patchClass(String name, byte[] original) throws Exception
+    public byte[] patchFile(String name, byte[] original) throws Exception
     {
+        if (!name.endsWith(".class"))
+        {
+            return original;
+        }
+
         ClassReader reader = new ClassReader(original);
         ClassNode node = new ClassNode();
         reader.accept(node, 0);
@@ -38,7 +44,7 @@ public class HttpsProtocolPatcher implements LibraryPatcher
         List<FieldNode> fields = node.fields;
         for (FieldNode field : fields)
         {
-            if (field.value instanceof String && ((String) field.value).startsWith("https://"))
+            if (field.value instanceof String && ((String) field.value).startsWith(HTTPS_STRING))
             {
                 field.value = ((String) field.value).replaceAll(HTTPS_PATTERN, protocol + "://");
             }
@@ -65,7 +71,7 @@ public class HttpsProtocolPatcher implements LibraryPatcher
                 }
 
                 String cst = (String) ldc.cst;
-                if (!cst.startsWith("https://"))
+                if (!cst.startsWith(HTTPS_STRING))
                 {
                     continue;
                 }

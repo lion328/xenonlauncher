@@ -86,7 +86,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     private File getDependencyFile(DependencyName name, String prefix)
     {
-        return name.getFile(librariesDir, prefix, ".jar");
+        return name.getFile(librariesDir, prefix, "jar");
     }
 
     private void extractNatives(File nativesDir) throws IOException
@@ -145,6 +145,12 @@ public class JSONGameLauncher extends BasicGameLauncher
     private File patchLibrary(GameLibrary original, File dir) throws Exception
     {
         DependencyName depName = original.getDependencyName();
+
+        return patchLibrary(depName, getDependencyFile(depName), new File(dir, depName.getShortName().replace(':', '-') + ".jar"));
+    }
+
+    private File patchLibrary(DependencyName depName, File inFile, File outFile) throws Exception
+    {
         DependencyName regexDepName;
 
         // check first
@@ -163,12 +169,12 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         if (flag)
         {
-            return getDependencyFile(original.getDependencyName());
+            return inFile;
         }
 
         Map<String, byte[]> classes = new HashMap<>();
 
-        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(getDependencyFile(original.getDependencyName())));
+        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(inFile));
         ZipEntry zipEntry;
         byte[] buffer = new byte[4096];
         int read;
@@ -202,19 +208,13 @@ public class JSONGameLauncher extends BasicGameLauncher
             {
                 for (Map.Entry<String, byte[]> classEntry : classes.entrySet())
                 {
-                    if (!classEntry.getKey().endsWith(".class"))
-                    {
-                        continue;
-                    }
-
-                    buffer = entry.getValue().patchClass(classEntry.getKey().replaceAll("\\.class$", "").replace('/', '.'), classEntry.getValue());
+                    buffer = entry.getValue().patchFile(classEntry.getKey(), classEntry.getValue());
                     buffer = buffer.clone();
                     classEntry.setValue(buffer);
                 }
             }
         }
 
-        File outFile = new File(dir, depName.getShortName().replace(':', '-') + ".jar");
         if (!outFile.getParentFile().exists() && !outFile.getParentFile().mkdirs())
         {
             throw new IOException("Can't create directory");
@@ -254,7 +254,7 @@ public class JSONGameLauncher extends BasicGameLauncher
             }
         }
 
-        sb.append(versionJar.getAbsolutePath());
+        sb.append(patchLibrary(new DependencyName("net.minecraft:minecraft:" + versionInfo.getID()), versionJar, new File(patchedLibDir, versionInfo.getID() + ".jar")).getAbsolutePath());
 
         for (GameLibrary library : versionInfo.getLibraries())
         {
