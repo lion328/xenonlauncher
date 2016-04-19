@@ -6,7 +6,7 @@ import java.net.URL;
 public class URLUtil
 {
 
-    public static URL safeURL(String url)
+    public static URL constantURL(String url)
     {
         try
         {

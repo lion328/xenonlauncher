@@ -2,9 +2,9 @@ package com.lion328.xenonlauncher.main;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.HttpsProtocolPatcher;

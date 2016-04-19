@@ -1,4 +1,4 @@
-package com.lion328.xenonlauncher.minecraft.launcher.json.data;
+package com.lion328.xenonlauncher.downloader.repository;
 
 import java.io.File;
 
@@ -30,24 +30,36 @@ public class DependencyName
         version = list[2];
     }
 
-    public File getFile(File librariesDir)
+    public String getPath()
     {
-        return getFile(librariesDir, "");
+        return getPath("");
     }
 
-    public File getFile(File librariesDir, String prefix)
+    public String getPath(String classifier)
     {
-        return getFile(librariesDir, prefix, "jar");
-    }
+        if (classifier == null)
+        {
+            classifier = "";
+        }
+        else
+        {
+            classifier = "-" + classifier;
+        }
 
-    public File getFile(File librariesDir, String prefix, String extension)
-    {
-        String path = packageName.replace('.', '/') + "/" +
+        return packageName.replace('.', '/') + "/" +
                 name + "/" +
                 version + "/" +
-                name + "-" + version + prefix + "." + extension;
+                name + "-" + version + classifier + ".jar";
+    }
 
-        return new File(librariesDir, path);
+    public File getFile(File librariesDir)
+    {
+        return getFile(librariesDir, null);
+    }
+
+    public File getFile(File librariesDir, String classifier)
+    {
+        return new File(librariesDir, getPath(classifier));
     }
 
     public String getShortName()

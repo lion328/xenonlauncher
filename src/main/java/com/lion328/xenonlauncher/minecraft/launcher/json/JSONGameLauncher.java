@@ -1,7 +1,7 @@
 package com.lion328.xenonlauncher.minecraft.launcher.json;
 
+import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
@@ -81,12 +81,12 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     private File getDependencyFile(DependencyName name)
     {
-        return getDependencyFile(name, "");
+        return getDependencyFile(name, null);
     }
 
-    private File getDependencyFile(DependencyName name, String prefix)
+    private File getDependencyFile(DependencyName name, String classifier)
     {
-        return name.getFile(librariesDir, prefix, "jar");
+        return name.getFile(librariesDir, classifier);
     }
 
     private void extractNatives(File nativesDir) throws IOException
@@ -103,7 +103,7 @@ public class JSONGameLauncher extends BasicGameLauncher
             if (library.isNativesLibrary() && library.isAllowed())
             {
                 nativesFile = getDependencyFile(library.getDependencyName(),
-                        "-" + library.getNatives().getNative());
+                        library.getNatives().getNative());
 
                 zip = new ZipInputStream(new FileInputStream(nativesFile));
 
