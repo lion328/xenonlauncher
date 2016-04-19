@@ -117,7 +117,22 @@ public class LibraryDownloader implements DownloaderCallbackHandler
             FileDownloader downloader = entry.getKey();
 
             downloader.registerCallback(callback);
-            downloader.download();
+
+            for (int j = 0; true; i++)
+            {
+                try
+                {
+                    downloader.download();
+                    break;
+                }
+                catch (IOException e)
+                {
+                    if (i >= RETRIES)
+                    {
+                        throw e;
+                    }
+                }
+            }
 
             i++;
         }
