@@ -118,7 +118,7 @@ public class LibraryDownloader implements DownloaderCallbackHandler
 
             downloader.registerCallback(callback);
 
-            for (int j = 0; true; i++)
+            for (int j = 0; true; j++)
             {
                 try
                 {
@@ -127,7 +127,7 @@ public class LibraryDownloader implements DownloaderCallbackHandler
                 }
                 catch (IOException e)
                 {
-                    if (i >= RETRIES)
+                    if (j >= RETRIES)
                     {
                         throw e;
                     }
