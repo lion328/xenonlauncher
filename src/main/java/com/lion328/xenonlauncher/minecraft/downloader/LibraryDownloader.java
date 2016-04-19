@@ -69,6 +69,8 @@ public class LibraryDownloader implements DownloaderCallbackHandler
             @Override
             public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
             {
+                size = fileSize;
+                downloaded = fileDownloaded;
                 onPercentageChange(file, percentage, fileSize, fileDownloaded);
             }
         };
