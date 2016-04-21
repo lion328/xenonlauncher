@@ -167,7 +167,7 @@ public class GameDownloader implements DownloaderCallbackHandler
     @Override
     public File getCurrentFile()
     {
-        return null;
+        return currentFile;
     }
 
     @Override
