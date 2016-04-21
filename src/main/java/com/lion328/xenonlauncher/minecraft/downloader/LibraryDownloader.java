@@ -8,8 +8,6 @@ import com.lion328.xenonlauncher.downloader.VerifiyFileDownloader;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.downloader.repository.Repository;
 import com.lion328.xenonlauncher.downloader.verifier.FileVerifier;
-import com.lion328.xenonlauncher.downloader.verifier.MessageDigestFileVerifier;
-import com.lion328.xenonlauncher.downloader.verifier.RepositoryFileVerifier;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DownloadInformation;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.util.OS;
@@ -170,7 +168,7 @@ public class LibraryDownloader implements Downloader
         else
         {
             DependencyName name = library.getDependencyName();
-            verifier = new RepositoryFileVerifier(defaultRepository, name, classifier, MessageDigestFileVerifier.SHA_1);
+            verifier = new MinecraftFileVerifier(defaultRepository, name, classifier);
             downloader = defaultRepository.getDownloader(name, classifier, null, file);
         }
 
