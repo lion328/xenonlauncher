@@ -28,6 +28,6 @@ public class MinecraftFileVerifier implements FileVerifier
     @Override
     public boolean isValid(File file) throws IOException
     {
-        return false;
+        return verifier.isValid(file);
     }
 }
