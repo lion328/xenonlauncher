@@ -39,11 +39,11 @@ public class URLFileDownloader implements FileDownloader
     }
 
     @Override
-    public synchronized boolean download() throws IOException
+    public synchronized void download() throws IOException
     {
         if (running)
         {
-            return false;
+            return;
         }
 
         running = true;
@@ -81,8 +81,6 @@ public class URLFileDownloader implements FileDownloader
         fileOut.close();
 
         running = false;
-
-        return true;
     }
 
     public URL getInputUrl()

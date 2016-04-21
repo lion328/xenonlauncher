@@ -119,4 +119,15 @@ public class MergedGameVersion extends GameVersion
     {
         return parent.getID();
     }
+
+    @Override
+    public String getJarName()
+    {
+        if (child.getJarName() == null)
+        {
+            return parent.getJarName();
+        }
+
+        return child.getJarName();
+    }
 }

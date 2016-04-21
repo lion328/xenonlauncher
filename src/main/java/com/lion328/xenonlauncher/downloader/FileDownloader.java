@@ -1,16 +1,9 @@
 package com.lion328.xenonlauncher.downloader;
 
 import java.io.File;
-import java.io.IOException;
 
-public interface FileDownloader extends DownloaderCallbackHandler
+public interface FileDownloader extends Downloader
 {
-
-    boolean download() throws IOException;
-
-    void stop();
-
-    boolean isRunning();
 
     File getFile();
 }

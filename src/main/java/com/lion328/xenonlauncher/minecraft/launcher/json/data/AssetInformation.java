@@ -12,7 +12,7 @@ public class AssetInformation extends DownloadInformation
     @SerializedName("id")
     private String id;
     @SerializedName("known")
-    private boolean knownSizeAndHash = false;
+    private boolean knownSizeAndHash = true;
 
     public AssetInformation(int totalSizeInBytes, String id, URL url, String sha1Hash, int sizeInBytes)
     {

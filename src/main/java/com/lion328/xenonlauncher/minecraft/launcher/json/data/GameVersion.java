@@ -2,6 +2,7 @@ package com.lion328.xenonlauncher.minecraft.launcher.json.data;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,9 @@ public class GameVersion
 {
 
     public static final int PARSER_VERSION = 18;
+    public static final String DOWNLOAD_CLIENT = "client";
+    public static final String DOWNLOAD_SERVER = "server";
+    public static final String DOWNLOAD_SERVER_WINDOWS = "windows_server";
 
     @SerializedName("id")
     private String id;
@@ -35,13 +39,15 @@ public class GameVersion
     private AssetInformation assetInformation;
     @SerializedName("inheritsFrom")
     private String parentId;
+    @SerializedName("jar")
+    private String jar;
 
     public GameVersion()
     {
 
     }
 
-    public GameVersion(String id, Date time, Date releaseTime, ReleaseType releaseType, String minecraftArguments, List<GameLibrary> libraries, String mainClass, int version, String assets, Map<String, DownloadInformation> downloads, AssetInformation assetInformation, String parentId)
+    public GameVersion(String id, Date time, Date releaseTime, ReleaseType releaseType, String minecraftArguments, List<GameLibrary> libraries, String mainClass, int version, String assets, Map<String, DownloadInformation> downloads, AssetInformation assetInformation, String parentId, String jar)
     {
         this.id = id;
         this.time = time;
@@ -55,6 +61,7 @@ public class GameVersion
         this.downloads = downloads;
         this.assetInformation = assetInformation;
         this.parentId = parentId;
+        this.jar = jar;
     }
 
     public String getID()
@@ -115,5 +122,25 @@ public class GameVersion
     public String getParentID()
     {
         return parentId;
+    }
+
+    public String getJarName()
+    {
+        if (jar == null)
+        {
+            return id;
+        }
+
+        return jar;
+    }
+
+    public String getJarPath()
+    {
+        return getJarName() + "/" + getJarName() + ".jar";
+    }
+
+    public File getJarFile(File basepath)
+    {
+        return new File(basepath, getJarPath());
     }
 }

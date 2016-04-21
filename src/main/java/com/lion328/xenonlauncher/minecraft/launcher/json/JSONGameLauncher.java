@@ -4,15 +4,14 @@ import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
-import com.lion328.xenonlauncher.minecraft.launcher.json.exception.MissingInformationException;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
 import com.lion328.xenonlauncher.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -145,8 +144,18 @@ public class JSONGameLauncher extends BasicGameLauncher
     private File patchLibrary(GameLibrary original, File dir) throws Exception
     {
         DependencyName depName = original.getDependencyName();
+        File libFile;
 
-        return patchLibrary(depName, getDependencyFile(depName), new File(dir, depName.getShortName().replace(':', '-') + ".jar"));
+        if (original.getDownloadInfo().getArtifactInfo().getPath() == null)
+        {
+            libFile = getDependencyFile(depName);
+        }
+        else
+        {
+            libFile = new File(librariesDir, original.getDownloadInfo().getArtifactInfo().getPath());
+        }
+
+        return patchLibrary(depName, libFile, new File(dir, depName.getShortName().replace(':', '-') + ".jar"));
     }
 
     private File patchLibrary(DependencyName depName, File inFile, File outFile) throws Exception
@@ -238,20 +247,11 @@ public class JSONGameLauncher extends BasicGameLauncher
     {
         StringBuilder sb = new StringBuilder();
 
-        File versionJar = new File(versionsDir, versionInfo.getID() + "/" + versionInfo.getID() + ".jar");
-        GameVersion version = versionInfo;
+        File versionJar = versionInfo.getJarFile(basepathDir);
 
-        while (!versionJar.isFile())
+        if (!versionJar.isFile())
         {
-            if (version instanceof MergedGameVersion)
-            {
-                version = ((MergedGameVersion) version).getParent();
-                versionJar = new File(versionsDir, version.getID() + "/" + version.getID() + ".jar");
-            }
-            else
-            {
-                throw new MissingInformationException(versionJar.getAbsolutePath() + " is missing");
-            }
+            throw new FileNotFoundException(versionJar.getAbsolutePath() + " is missing");
         }
 
         sb.append(patchLibrary(new DependencyName("net.minecraft:minecraft:" + versionInfo.getID()), versionJar, new File(patchedLibDir, versionInfo.getID() + ".jar")).getAbsolutePath());

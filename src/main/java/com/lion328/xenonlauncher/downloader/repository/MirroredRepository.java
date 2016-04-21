@@ -5,6 +5,8 @@ import com.lion328.xenonlauncher.downloader.FileDownloader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
 
 public class MirroredRepository implements Repository
 {
@@ -16,6 +18,24 @@ public class MirroredRepository implements Repository
     {
         this.main = main;
         this.mirror = mirror;
+    }
+
+    public static Repository fromRepositoryList(List<Repository> repositoryList)
+    {
+        if (repositoryList.size() < 1)
+        {
+            return null;
+        }
+
+        Iterator<Repository> iterator = repositoryList.iterator();
+        Repository repository = iterator.next();
+
+        while (iterator.hasNext())
+        {
+            repository = new MirroredRepository(repository, iterator.next());
+        }
+
+        return repository;
     }
 
     public Repository getMainRepository()

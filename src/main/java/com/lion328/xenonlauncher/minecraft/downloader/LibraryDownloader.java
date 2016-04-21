@@ -1,11 +1,11 @@
 package com.lion328.xenonlauncher.minecraft.downloader;
 
-import com.lion328.xenonlauncher.downloader.DownloaderCallbackHandler;
+import com.lion328.xenonlauncher.downloader.Downloader;
 import com.lion328.xenonlauncher.downloader.FileDownloader;
 import com.lion328.xenonlauncher.downloader.FileDownloaderCallback;
 import com.lion328.xenonlauncher.downloader.URLFileDownloader;
+import com.lion328.xenonlauncher.downloader.VerifiyFileDownloader;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
-import com.lion328.xenonlauncher.downloader.repository.MirroredRepository;
 import com.lion328.xenonlauncher.downloader.repository.Repository;
 import com.lion328.xenonlauncher.downloader.verifier.FileVerifier;
 import com.lion328.xenonlauncher.downloader.verifier.MessageDigestFileVerifier;
@@ -16,14 +16,10 @@ import com.lion328.xenonlauncher.util.OS;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-public class LibraryDownloader implements DownloaderCallbackHandler
+public class LibraryDownloader implements Downloader
 {
 
     public static final int RETRIES = 5;
@@ -33,7 +29,7 @@ public class LibraryDownloader implements DownloaderCallbackHandler
     private final File librariesDir;
     private final OS os;
     private final String arch;
-    private final List<Repository> defaultRepository;
+    private final Repository defaultRepository;
     private final List<FileDownloaderCallback> callbackList;
     private final FileDownloaderCallback callback;
 
@@ -43,17 +39,17 @@ public class LibraryDownloader implements DownloaderCallbackHandler
     private long size;
     private long downloaded;
 
-    public LibraryDownloader(GameLibrary library, File basepathDir, List<Repository> defaultRepository)
+    public LibraryDownloader(GameLibrary library, File basepathDir, Repository defaultRepository)
     {
         this(library, basepathDir, OS.getCurrentOS(), OS.getCurrentArchitecture(), defaultRepository);
     }
 
-    public LibraryDownloader(GameLibrary library, File basepathDir, OS os, String arch, List<Repository> defaultRepository)
+    public LibraryDownloader(GameLibrary library, File basepathDir, OS os, String arch, Repository defaultRepository)
     {
         this(library, basepathDir, os, arch, defaultRepository, URLFileDownloader.BUFFER_SIZE);
     }
 
-    public LibraryDownloader(GameLibrary library, File basepathDir, OS os, String arch, List<Repository> defaultRepository, int bufferSize)
+    public LibraryDownloader(GameLibrary library, File basepathDir, OS os, String arch, Repository defaultRepository, int bufferSize)
     {
         this.library = library;
         this.basepathDir = basepathDir;
@@ -78,6 +74,7 @@ public class LibraryDownloader implements DownloaderCallbackHandler
         this.running = false;
     }
 
+    @Override
     public synchronized void download() throws IOException
     {
         if (running)
@@ -87,36 +84,43 @@ public class LibraryDownloader implements DownloaderCallbackHandler
 
         running = true;
 
-        Map<FileDownloader, FileVerifier> downloaders = new HashMap<>();
+        List<FileDownloader> downloaders = new ArrayList<>();
         File file;
 
         if (library.isJavaLibrary())
         {
-            file = library.getDependencyName().getFile(librariesDir);
-            downloaders.entrySet().add(getDownloaderAndVerifier(file, null));
+            if (library.getDownloadInfo().getArtifactInfo().getPath() == null)
+            {
+                file = library.getDependencyName().getFile(librariesDir);
+            }
+            else
+            {
+                file = new File(librariesDir, library.getDownloadInfo().getArtifactInfo().getPath());
+            }
+
+            downloaders.add(getDownloader(file, null));
         }
 
         if (library.isNativesLibrary())
         {
             String classifier = library.getNatives().getNative(os, arch);
-            file = library.getDependencyName().getFile(librariesDir, classifier);
-            downloaders.entrySet().add(getDownloaderAndVerifier(file, classifier));
+
+            if (library.getDownloadInfo().getArtifactInfo().getPath() == null)
+            {
+                file = library.getDependencyName().getFile(librariesDir, classifier);
+            }
+            else
+            {
+                file = new File(librariesDir, library.getDownloadInfo().getClassfiersInfo().get(classifier).getPath());
+            }
+
+            downloaders.add(getDownloader(file, classifier));
         }
 
         int i = 0;
-        for (Map.Entry<FileDownloader, FileVerifier> entry : downloaders.entrySet())
+        for (FileDownloader downloader : downloaders)
         {
             percentage = i * 100 / downloaders.size();
-
-            currentFile = entry.getKey().getFile();
-            FileVerifier verifier = entry.getValue();
-
-            if (verifier.isValid(currentFile))
-            {
-                continue;
-            }
-
-            FileDownloader downloader = entry.getKey();
 
             downloader.registerCallback(callback);
 
@@ -142,8 +146,11 @@ public class LibraryDownloader implements DownloaderCallbackHandler
         running = false;
     }
 
-    private Map.Entry<FileDownloader, FileVerifier> getDownloaderAndVerifier(File file, String classifier) throws IOException
+    private FileDownloader getDownloader(File file, String classifier) throws IOException
     {
+        FileDownloader downloader;
+        FileVerifier verifier;
+
         if (library.getDownloadInfo() != null)
         {
             DownloadInformation downloadInfo;
@@ -157,43 +164,17 @@ public class LibraryDownloader implements DownloaderCallbackHandler
                 downloadInfo = library.getDownloadInfo().getClassfiersInfo().get(classifier);
             }
 
-            FileDownloader downloader = new URLFileDownloader(downloadInfo.getURL(), file);
-            FileVerifier verifier = new MinecraftFileVerifier(downloadInfo);
-
-            return new AbstractMap.SimpleEntry<>(downloader, verifier);
+            downloader = new URLFileDownloader(downloadInfo.getURL(), file);
+            verifier = new MinecraftFileVerifier(downloadInfo);
         }
-
-        Repository repository = getRepository();
-
-        if (repository == null)
+        else
         {
-            return null;
+            DependencyName name = library.getDependencyName();
+            verifier = new RepositoryFileVerifier(defaultRepository, name, classifier, MessageDigestFileVerifier.SHA_1);
+            downloader = defaultRepository.getDownloader(name, classifier, null, file);
         }
 
-        DependencyName name = library.getDependencyName();
-        FileVerifier verifier = new RepositoryFileVerifier(repository, name, classifier, MessageDigestFileVerifier.SHA_1);
-        FileDownloader downloader = repository.getDownloader(name, classifier, null, file);
-
-        return new AbstractMap.SimpleEntry<>(downloader, verifier);
-    }
-
-    private Repository getRepository()
-    {
-        if (defaultRepository.size() < 1)
-        {
-            return null;
-        }
-
-        DependencyName name = library.getDependencyName();
-        Iterator<Repository> iterator = defaultRepository.iterator();
-        Repository repository = iterator.next();
-
-        while (iterator.hasNext())
-        {
-            repository = new MirroredRepository(repository, iterator.next());
-        }
-
-        return repository;
+        return new VerifiyFileDownloader(downloader, verifier);
     }
 
     public void stop()
@@ -214,7 +195,7 @@ public class LibraryDownloader implements DownloaderCallbackHandler
         }
     }
 
-    public List<Repository> getDefaultRepositories()
+    public Repository getDefaultRepository()
     {
         return defaultRepository;
     }

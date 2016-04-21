@@ -8,27 +8,27 @@ public class LibraryDownloadInfomation
 {
 
     @SerializedName("artifact")
-    private DownloadInformation artifactInfo;
+    private PathDownloadInformation artifactInfo;
     @SerializedName("classifiers")
-    private Map<String, DownloadInformation> classfiersInfo;
+    private Map<String, PathDownloadInformation> classfiersInfo;
 
     public LibraryDownloadInfomation()
     {
 
     }
 
-    public LibraryDownloadInfomation(DownloadInformation artifact, Map<String, DownloadInformation> classfiers)
+    public LibraryDownloadInfomation(PathDownloadInformation artifact, Map<String, PathDownloadInformation> classfiers)
     {
         artifactInfo = artifact;
         classfiersInfo = classfiers;
     }
 
-    public DownloadInformation getArtifactInfo()
+    public PathDownloadInformation getArtifactInfo()
     {
         return artifactInfo;
     }
 
-    public Map<String, DownloadInformation> getClassfiersInfo()
+    public Map<String, PathDownloadInformation> getClassfiersInfo()
     {
         return classfiersInfo;
     }
