@@ -1,4 +1,4 @@
-package com.lion328.xenonlauncher.minecraft.downloader;
+package com.lion328.xenonlauncher.minecraft.downloader.verifier;
 
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.downloader.repository.Repository;

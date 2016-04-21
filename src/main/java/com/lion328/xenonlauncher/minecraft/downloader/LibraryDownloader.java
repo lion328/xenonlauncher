@@ -8,6 +8,7 @@ import com.lion328.xenonlauncher.downloader.VerifiyFileDownloader;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.downloader.repository.Repository;
 import com.lion328.xenonlauncher.downloader.verifier.FileVerifier;
+import com.lion328.xenonlauncher.minecraft.downloader.verifier.MinecraftFileVerifier;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DownloadInformation;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.util.OS;
