@@ -1,18 +1,14 @@
 package com.lion328.xenonlauncher.minecraft.downloader;
 
-import com.lion328.xenonlauncher.downloader.Downloader;
 import com.lion328.xenonlauncher.downloader.DownloaderCallbackHandler;
 import com.lion328.xenonlauncher.downloader.FileDownloader;
 import com.lion328.xenonlauncher.downloader.FileDownloaderCallback;
 import com.lion328.xenonlauncher.downloader.URLFileDownloader;
 import com.lion328.xenonlauncher.downloader.VerifiyFileDownloader;
-import com.lion328.xenonlauncher.downloader.repository.Repository;
 import com.lion328.xenonlauncher.downloader.verifier.MessageDigestFileVerifier;
 import com.lion328.xenonlauncher.minecraft.downloader.verifier.MinecraftFileVerifier;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DownloadInformation;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
-import com.lion328.xenonlauncher.util.OS;
 import com.lion328.xenonlauncher.util.URLUtil;
 
 import java.io.File;
@@ -25,14 +21,11 @@ import java.util.List;
 public class GameDownloader implements DownloaderCallbackHandler
 {
 
-    public static final URL MINECRAFT_VERSIONS = URLUtil.constantURL("https://s3.amazonaws.com/Minecraft.Download/versions/");
+    public static final URL DEFAULT_MINECRAFT_VERSIONS = URLUtil.constantURL("https://s3.amazonaws.com/Minecraft.Download/versions/");
 
     private final GameVersion info;
+    private final URL downloadURL;
     private final File basepath;
-    private final Repository defaultRepository;
-    private final OS os;
-    private final String osVersion;
-    private final String osArch;
     private final int bufferSize;
     private final List<FileDownloaderCallback> callbackList;
     private final FileDownloaderCallback callback;
@@ -43,24 +36,21 @@ public class GameDownloader implements DownloaderCallbackHandler
     private long fileSize;
     private long downloadedSize;
 
-    public GameDownloader(GameVersion info, File basepath, Repository defaultRepository)
+    public GameDownloader(GameVersion info, File basepath)
     {
-        this(info, basepath, defaultRepository, OS.getCurrentOS(), OS.getCurrentVersion(), OS.getCurrentArchitecture());
+        this(info, DEFAULT_MINECRAFT_VERSIONS, basepath);
     }
 
-    public GameDownloader(GameVersion info, File basepath, Repository defaultRepository, OS os, String osVersion, String osArch)
+    public GameDownloader(GameVersion info, URL downloadURL, File basepath)
     {
-        this(info, basepath, defaultRepository, os, osVersion, osArch, URLFileDownloader.BUFFER_SIZE);
+        this(info, downloadURL, basepath, URLFileDownloader.BUFFER_SIZE);
     }
 
-    public GameDownloader(GameVersion info, File basepath, Repository defaultRepository, OS os, String osVersion, String osArch, int bufferSize)
+    public GameDownloader(GameVersion info, URL downloadURL, File basepath, int bufferSize)
     {
         this.info = info;
+        this.downloadURL = downloadURL;
         this.basepath = basepath;
-        this.defaultRepository = defaultRepository;
-        this.os = os;
-        this.osVersion = osVersion;
-        this.osArch = osArch;
         this.bufferSize = bufferSize;
 
         callbackList = new ArrayList<>();
@@ -72,6 +62,7 @@ public class GameDownloader implements DownloaderCallbackHandler
             public void onPercentageChange(File file, int overallPercentage, long size, long fileDownloaded)
             {
                 currentFile = file;
+                overallProgress = overallPercentage;
                 fileSize = size;
                 downloadedSize = fileDownloaded;
 
@@ -91,8 +82,7 @@ public class GameDownloader implements DownloaderCallbackHandler
 
         running = true;
 
-        List<Downloader> downloaders = new ArrayList<>();
-        URL jarURL = null;
+        URL jarURL;
         File jarFile = info.getJarFile(basepath);
         FileDownloader downloader;
 
@@ -100,12 +90,12 @@ public class GameDownloader implements DownloaderCallbackHandler
         {
             DownloadInformation downloadInfo = info.getDownloadsInformation().get(GameVersion.DOWNLOAD_CLIENT);
             jarURL = downloadInfo.getURL();
-            downloader = new URLFileDownloader(jarURL, info.getJarFile(basepath), bufferSize);
+            downloader = new URLFileDownloader(jarURL, jarFile, bufferSize);
             downloader = new VerifiyFileDownloader(downloader, new MinecraftFileVerifier(downloadInfo));
         }
         else
         {
-            jarURL = new URL(MINECRAFT_VERSIONS, info.getJarName() + "/" + info.getJarName() + ".jar");
+            jarURL = new URL(downloadURL, info.getJarName() + "/" + info.getJarName() + ".jar");
 
             HttpURLConnection connection = (HttpURLConnection) jarURL.openConnection();
             String md5 = connection.getHeaderField("ETag");
@@ -118,31 +108,12 @@ public class GameDownloader implements DownloaderCallbackHandler
             // md5 = md5.substring(1, md5.length() - 1); // delete quotes
             md5 = md5.trim().replace("\"", ""); // maybe this is better
 
-            downloader = new URLFileDownloader(jarURL, info.getJarFile(basepath), bufferSize);
+            downloader = new URLFileDownloader(jarURL, jarFile, bufferSize);
             downloader = new VerifiyFileDownloader(downloader, new MessageDigestFileVerifier(MessageDigestFileVerifier.MD5, md5));
         }
 
-        downloaders.add(downloader);
-
-        for (GameLibrary library : info.getLibraries())
-        {
-            downloaders.add(new LibraryDownloader(library, basepath, os, osArch, defaultRepository, bufferSize));
-        }
-
-        int i = 0;
-        for (Downloader dl : downloaders)
-        {
-            overallProgress = i * 100 / downloaders.size();
-
-            dl.registerCallback(callback);
-            dl.download();
-
-            i++;
-        }
-
-        overallProgress = 100;
-
-        callCallbacks();
+        downloader.registerCallback(callback);
+        downloader.download();
 
         running = false;
     }
@@ -150,11 +121,6 @@ public class GameDownloader implements DownloaderCallbackHandler
     public void stop()
     {
         running = false;
-    }
-
-    public Repository getDefaultRepository()
-    {
-        return defaultRepository;
     }
 
     private void callCallbacks()
