@@ -74,6 +74,7 @@ public class MultipleDownloader implements Downloader
         }
 
         running = true;
+        idx = 0;
 
         for (Downloader downloader : downloaderList)
         {
@@ -85,6 +86,8 @@ public class MultipleDownloader implements Downloader
             downloader.registerCallback(callback);
             downloader.download();
             downloader.removeCallback(callback);
+
+            idx++;
         }
 
         overall = 100;
