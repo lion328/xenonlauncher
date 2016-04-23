@@ -1,5 +1,7 @@
 package com.lion328.xenonlauncher.util;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -17,5 +19,18 @@ public class URLUtil
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getETag(URL url) throws IOException
+    {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        String etag = connection.getHeaderField("ETag");
+
+        if (etag == null)
+        {
+            throw new IOException("ETag header not found");
+        }
+
+        return etag;
     }
 }

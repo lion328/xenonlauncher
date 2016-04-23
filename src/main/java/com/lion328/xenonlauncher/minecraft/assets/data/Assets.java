@@ -4,23 +4,23 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.Map;
 
-public class AssetsInformation
+public class Assets
 {
 
     @SerializedName("objects")
-    private Map<String, ObjectInformation> objects;
+    private Map<String, AssetsObject> objects;
 
-    public AssetsInformation()
+    public Assets()
     {
 
     }
 
-    public AssetsInformation(Map<String, ObjectInformation> objects)
+    public Assets(Map<String, AssetsObject> objects)
     {
         this.objects = objects;
     }
 
-    public Map<String, ObjectInformation> getObjects()
+    public Map<String, AssetsObject> getObjects()
     {
         return objects;
     }

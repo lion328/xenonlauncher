@@ -10,7 +10,7 @@ public class MirroredDownloader implements Downloader
 
     private final Downloader main;
     private final Downloader mirror;
-    private final List<FileDownloaderCallback> callbackList;
+    private final List<DownloaderCallback> callbackList;
 
     public MirroredDownloader(Downloader main, Downloader mirror)
     {
@@ -18,13 +18,13 @@ public class MirroredDownloader implements Downloader
         this.mirror = mirror;
         this.callbackList = new ArrayList<>();
 
-        FileDownloaderCallback callback = new FileDownloaderCallback()
+        DownloaderCallback callback = new DownloaderCallback()
         {
 
             @Override
             public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
             {
-                for (FileDownloaderCallback callback : callbackList)
+                for (DownloaderCallback callback : callbackList)
                 {
                     onPercentageChange(file, overallPercentage, fileSize, fileDownloaded);
                 }
@@ -106,13 +106,13 @@ public class MirroredDownloader implements Downloader
     }
 
     @Override
-    public void registerCallback(FileDownloaderCallback callback)
+    public void registerCallback(DownloaderCallback callback)
     {
         callbackList.add(callback);
     }
 
     @Override
-    public void removeCallback(FileDownloaderCallback callback)
+    public void removeCallback(DownloaderCallback callback)
     {
         callbackList.remove(callback);
     }

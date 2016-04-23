@@ -136,7 +136,7 @@ public class GameVersion
 
     public String getJarPath()
     {
-        return getJarName() + "/" + getJarName() + ".jar";
+        return "versions/" + getJarName() + "/" + getJarName() + ".jar";
     }
 
     public File getJarFile(File basepath)

@@ -13,7 +13,7 @@ public interface DownloaderCallbackHandler
 
     long getCurrentDownloadedSize();
 
-    void registerCallback(FileDownloaderCallback callback);
+    void registerCallback(DownloaderCallback callback);
 
-    void removeCallback(FileDownloaderCallback callback);
+    void removeCallback(DownloaderCallback callback);
 }

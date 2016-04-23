@@ -17,7 +17,7 @@ public class URLFileDownloader implements FileDownloader
     private final URL inputUrl;
     private final File targetFile;
     private final int bufferSize;
-    private final List<FileDownloaderCallback> callbackList;
+    private final List<DownloaderCallback> callbackList;
 
     private boolean running;
     private int percentage;
@@ -54,6 +54,11 @@ public class URLFileDownloader implements FileDownloader
         size = connection.getContentLengthLong();
         downloaded = 0;
         percentage = 0;
+
+        if (!targetFile.getParentFile().exists() && !targetFile.getParentFile().mkdirs())
+        {
+            throw new IOException("Can't create directory (" + targetFile.getParentFile() + ")");
+        }
 
         OutputStream fileOut = new FileOutputStream(targetFile);
 
@@ -125,20 +130,20 @@ public class URLFileDownloader implements FileDownloader
     }
 
     @Override
-    public void registerCallback(FileDownloaderCallback callback)
+    public void registerCallback(DownloaderCallback callback)
     {
         callbackList.add(callback);
     }
 
     @Override
-    public void removeCallback(FileDownloaderCallback callback)
+    public void removeCallback(DownloaderCallback callback)
     {
         callbackList.remove(callback);
     }
 
     private void onPercentageChange(File file, int percentage, long size, long downloaded)
     {
-        for (FileDownloaderCallback callback : callbackList)
+        for (DownloaderCallback callback : callbackList)
         {
             callback.onPercentageChange(file, percentage, size, downloaded);
         }

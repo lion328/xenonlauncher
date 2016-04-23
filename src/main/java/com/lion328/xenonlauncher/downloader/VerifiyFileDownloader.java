@@ -12,8 +12,8 @@ public class VerifiyFileDownloader implements FileDownloader
 
     private final FileDownloader downloader;
     private final FileVerifier verifier;
-    private final List<FileDownloaderCallback> callbackList;
-    private final FileDownloaderCallback callback;
+    private final List<DownloaderCallback> callbackList;
+    private final DownloaderCallback callback;
 
     private int percentage;
     private long size;
@@ -24,13 +24,13 @@ public class VerifiyFileDownloader implements FileDownloader
         this.downloader = downloader;
         this.verifier = verifier;
 
-        callback = new FileDownloaderCallback()
+        callback = new DownloaderCallback()
         {
 
             @Override
             public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
             {
-                for (FileDownloaderCallback callback : callbackList)
+                for (DownloaderCallback callback : callbackList)
                 {
                     callback.onPercentageChange(file, overallPercentage, fileSize, fileDownloaded);
                 }
@@ -38,7 +38,6 @@ public class VerifiyFileDownloader implements FileDownloader
         };
 
         callbackList = new ArrayList<>();
-        callbackList.add(callback);
 
         reset();
     }
@@ -66,13 +65,14 @@ public class VerifiyFileDownloader implements FileDownloader
         reset();
         runCallback();
 
-
         if (verifier.isValid(getFile()))
         {
             return;
         }
 
+        downloader.registerCallback(callback);
         downloader.download();
+        downloader.removeCallback(callback);
     }
 
     @Override
@@ -112,13 +112,13 @@ public class VerifiyFileDownloader implements FileDownloader
     }
 
     @Override
-    public void registerCallback(FileDownloaderCallback callback)
+    public void registerCallback(DownloaderCallback callback)
     {
         callbackList.add(callback);
     }
 
     @Override
-    public void removeCallback(FileDownloaderCallback callback)
+    public void removeCallback(DownloaderCallback callback)
     {
         callbackList.remove(callback);
     }

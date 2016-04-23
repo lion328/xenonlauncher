@@ -2,11 +2,14 @@ package com.lion328.xenonlauncher.main;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lion328.xenonlauncher.downloader.Downloader;
+import com.lion328.xenonlauncher.downloader.DownloaderCallback;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
+import com.lion328.xenonlauncher.minecraft.downloader.MinecraftDownloader;
+import com.lion328.xenonlauncher.minecraft.downloader.Repositories;
 import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
-import com.lion328.xenonlauncher.minecraft.launcher.json.data.MergedGameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
 import com.lion328.xenonlauncher.minecraft.launcher.patcher.HttpsProtocolPatcher;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
@@ -27,18 +30,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.regex.Pattern;
 
 public class Main
 {
 
     public static void main(String[] args) throws Exception
     {
-
-        String s = "http://sessionserver.mojang.com";
-        Pattern pattern = Pattern.compile("^https?:\\/\\/(.*\\.)?(mojang\\.com|minecraft\\.net).*");
-        System.out.println(pattern.matcher(s).find());
-
         final ServerSocket server = new ServerSocket(35565);
         final ProxyServer proxy = new SOCKS5ProxyServer();
         proxy.addDataHandler(Integer.MAX_VALUE, new StreamDataHandler()
@@ -110,64 +107,25 @@ public class Main
         });
         httpHandler.addHttpRequestHandler(Integer.MAX_VALUE, HttpDataHandler.STREAM_HANDLER);
         proxy.addDataHandler(50, httpHandler);
-        /*proxy.addDataHandler(25, new DataHandler() {
-
-            private final Pattern protocolPattern = Pattern.compile("^(GET)|(POST)|(PUT)|(DELETE)|(CONNECT)|(HEAD)|(OPTIONS)|(TRACE) /[^ ]+ HTTP/\\d(\\.\\d)?$");
-
-            @Override
-            public boolean process(Socket client, Socket server) throws Exception {
-                InputStream in = client.getInputStream();
-
-                in.mark(65536);
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-                String line;
-                List<String> requestLines = new ArrayList<>();
-                while ((line = reader.readLine()) != null && !line.equals("\r\n"))
-                    requestLines.add(line);
-
-                if (requestLines.size() < 1) {
-                    in.reset();
-                    return false;
-                }
-
-                String firstLine = requestLines.get(0);
-
-                if (!protocolPattern.matcher(firstLine).matches() || !firstLine.endsWith("HTTP/1.1")) {
-                    in.reset();
-                    return false;
-                }
-
-                String host = null;
-
-                for (String requestLine : requestLines) {
-                    if (requestLine.toLowerCase().startsWith("host: "))
-                        host = requestLine.substring(requestLine.indexOf(':')).trim();
-                }
-
-                if (host == null || !host.equalsIgnoreCase("sessionserver.mojang.com")) {
-                    in.reset();
-                    return false;
-                }
-
-                in.reset();
-
-                Socket clientSocket = SSLSocketFactory.getDefault().createSocket(host, 443);
-
-                StreamUtil.pipeStreamThread(in, clientSocket.getOutputStream());
-                StreamUtil.pipeStream(clientSocket.getInputStream(), client.getOutputStream());
-
-                return true;
-            }
-        });*/
-
         //System.exit(0);
 
-        File basepath = new File("/home/lion328/.minecraft");
+        File basepath = new File("/home/lion328/mc2");
+
+        Downloader mcDownloader = new MinecraftDownloader("1.9.2", basepath, Repositories.getRepository(), null);
+        mcDownloader.registerCallback(new DownloaderCallback()
+        {
+
+            @Override
+            public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
+            {
+                System.out.println(file.getName() + ", " + overallPercentage + "%, " + fileDownloaded + "/" + fileSize);
+            }
+        });
+        mcDownloader.download();
+
         File versions = new File(basepath, "versions");
         File libraries = new File(basepath, "libraries");
-        String id = "1.8.9-forge1.8.9-11.15.1.1847";
+        String id = "1.9.2";
 
         File jsonFile = new File(versions, id + "/" + id + ".json");
 
@@ -177,8 +135,8 @@ public class Main
         gsonBuilder.registerTypeAdapter(DependencyName.class, new DependencyNameTypeAdapter());
         Gson gson = gsonBuilder.create();
         GameVersion version = gson.fromJson(new FileReader(jsonFile), GameVersion.class);
-        GameVersion parent = gson.fromJson(new FileReader(new File(versions, "1.8.9/1.8.9.json")), GameVersion.class);
-        version = new MergedGameVersion(version, parent);
+        //GameVersion parent = gson.fromJson(new FileReader(new File(versions, "1.8.9/1.8.9.json")), GameVersion.class);
+        //version = new MergedGameVersion(version, parent);
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
         launcher.replaceArgument("auth_player_name", "lion328");

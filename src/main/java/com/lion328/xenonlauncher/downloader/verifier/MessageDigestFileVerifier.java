@@ -1,13 +1,15 @@
 package com.lion328.xenonlauncher.downloader.verifier;
 
+import com.lion328.xenonlauncher.util.ByteUtil;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class MessageDigestFileVerifier implements FileVerifier
 {
@@ -24,7 +26,7 @@ public class MessageDigestFileVerifier implements FileVerifier
 
     public MessageDigestFileVerifier(String algorithm, String hash)
     {
-        this(algorithm, new BigInteger(hash, 16).toByteArray());
+        this(algorithm, ByteUtil.fromHexString(hash));
     }
 
     public MessageDigestFileVerifier(String algorithm, byte[] hash)
@@ -35,6 +37,11 @@ public class MessageDigestFileVerifier implements FileVerifier
 
     public byte[] getFileHash(File file) throws IOException
     {
+        if (!file.exists())
+        {
+            return null;
+        }
+
         MessageDigest md;
 
         try
@@ -62,8 +69,8 @@ public class MessageDigestFileVerifier implements FileVerifier
     }
 
     @Override
-    public boolean isValid(File file)
+    public boolean isValid(File file) throws IOException
     {
-        return false;
+        return Arrays.equals(getFileHash(file), hash);
     }
 }
