@@ -3,8 +3,10 @@ package com.lion328.xenonlauncher.minecraft.downloader.verifier;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.downloader.repository.Repository;
 import com.lion328.xenonlauncher.downloader.verifier.FileVerifier;
+import com.lion328.xenonlauncher.downloader.verifier.MergedFileVerifier;
 import com.lion328.xenonlauncher.downloader.verifier.MessageDigestFileVerifier;
 import com.lion328.xenonlauncher.downloader.verifier.RepositoryFileVerifier;
+import com.lion328.xenonlauncher.downloader.verifier.SizeFileVerifier;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.DownloadInformation;
 
 import java.io.File;
@@ -22,7 +24,8 @@ public class MinecraftFileVerifier implements FileVerifier
 
     public MinecraftFileVerifier(DownloadInformation info)
     {
-        verifier = new MessageDigestFileVerifier(MessageDigestFileVerifier.SHA_1, info.getSHA1Hash());
+        FileVerifier tmp = new MessageDigestFileVerifier(MessageDigestFileVerifier.SHA_1, info.getSHA1Hash());
+        verifier = new MergedFileVerifier(new SizeFileVerifier(info.getSizeInBytes()), tmp);
     }
 
     @Override
