@@ -1,14 +1,14 @@
 package com.lion328.xenonlauncher.minecraft.launcher;
 
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
-import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
+import com.lion328.xenonlauncher.patcher.FilePatcher;
 
 public interface GameLauncher
 {
 
     Process launch() throws Exception;
 
-    void addPatcher(DependencyName regex, LibraryPatcher patcher);
+    void addPatcher(DependencyName regex, FilePatcher patcher);
 
     void replaceArgument(String key, String value);
 

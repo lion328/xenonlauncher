@@ -1,4 +1,4 @@
-package com.lion328.xenonlauncher.minecraft.launcher.patcher;
+package com.lion328.xenonlauncher.patcher;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -11,7 +11,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.util.List;
 
-public class HttpsProtocolPatcher implements LibraryPatcher
+public class HttpsProtocolPatcher implements FilePatcher
 {
 
     public static final String HTTPS_PATTERN = "^https:\\/\\/";

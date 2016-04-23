@@ -5,7 +5,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
-import com.lion328.xenonlauncher.minecraft.launcher.patcher.LibraryPatcher;
+import com.lion328.xenonlauncher.patcher.FilePatcher;
 import com.lion328.xenonlauncher.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +31,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     private List<String> jvmArgs = new ArrayList<>();
     private List<String> gameArgs = new ArrayList<>();
     private Map<String, String> replaceArgs = new HashMap<>();
-    private Map<DependencyName, LibraryPatcher> patchers = new HashMap<>();
+    private Map<DependencyName, FilePatcher> patchers = new HashMap<>();
 
     private GameVersion versionInfo;
     private File basepathDir;
@@ -164,7 +164,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         // check first
         boolean flag = true;
-        for (Map.Entry<DependencyName, LibraryPatcher> entry : patchers.entrySet())
+        for (Map.Entry<DependencyName, FilePatcher> entry : patchers.entrySet())
         {
             regexDepName = entry.getKey();
             if (depName.getPackageName().matches(regexDepName.getPackageName()) &&
@@ -208,7 +208,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         zipIn.close();
 
-        for (Map.Entry<DependencyName, LibraryPatcher> entry : patchers.entrySet())
+        for (Map.Entry<DependencyName, FilePatcher> entry : patchers.entrySet())
         {
             regexDepName = entry.getKey();
             if (depName.getPackageName().matches(regexDepName.getPackageName()) &&
@@ -372,7 +372,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     }
 
     @Override
-    public void addPatcher(DependencyName regex, LibraryPatcher patcher)
+    public void addPatcher(DependencyName regex, FilePatcher patcher)
     {
         patchers.put(regex, patcher);
     }

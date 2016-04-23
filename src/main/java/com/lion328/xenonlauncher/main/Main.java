@@ -11,7 +11,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
-import com.lion328.xenonlauncher.minecraft.launcher.patcher.HttpsProtocolPatcher;
+import com.lion328.xenonlauncher.patcher.HttpsProtocolPatcher;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.StreamDataHandler;
