@@ -110,8 +110,9 @@ public class Main
         //System.exit(0);
 
         File basepath = new File("/home/lion328/mc2");
+        String id = "1.8.9";
 
-        Downloader mcDownloader = new MinecraftDownloader("1.9.2", basepath, Repositories.getRepository(), null);
+        Downloader mcDownloader = new MinecraftDownloader(id, basepath, Repositories.getRepository(), null);
         mcDownloader.registerCallback(new DownloaderCallback()
         {
 
@@ -125,7 +126,6 @@ public class Main
 
         File versions = new File(basepath, "versions");
         File libraries = new File(basepath, "libraries");
-        String id = "1.9.2";
 
         File jsonFile = new File(versions, id + "/" + id + ".json");
 
@@ -143,7 +143,7 @@ public class Main
         launcher.replaceArgument("auth_uuid", "f0e9f5b95ce74d3d9545f2013d23ace7");
         launcher.replaceArgument("auth_access_token", "");
 
-        launcher.addJVMArgument("-Dlog4j.configuration=file://log4j.properties");
+        launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
         launcher.addJVMArgument("-DsocksProxyPort=35565");
 

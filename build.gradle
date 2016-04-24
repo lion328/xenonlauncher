@@ -6,24 +6,35 @@ repositories {
     mavenCentral()
 }
 
-configurations {
-    provided
-}
-
 dependencies {
-    provided 'com.google.code.gson:gson:2.6.2'
-    provided 'org.apache.httpcomponents:httpcore:4.4.4'
-    provided 'org.ow2.asm:asm-all:5.1'
+    compile 'com.google.code.gson:gson:2.6.2'
+    compile 'org.apache.httpcomponents:httpcore:4.4.4'
+    compile 'org.ow2.asm:asm-all:5.1'
 }
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
-sourceSets {
-    main.compileClasspath += configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.lion328.xenonlauncher.main.Main'
+    }
+}
 
+task fatJar(type: Jar) {
+    manifest.from jar.manifest
+    classifier = 'all'
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    with jar
+}
+
+sourceSets {
     main {
         java {
             srcDir 'src/main/java'

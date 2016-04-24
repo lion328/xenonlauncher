@@ -55,9 +55,11 @@ public class MessageDigestFileVerifier implements FileVerifier
 
         InputStream in = new DigestInputStream(new FileInputStream(file), md);
 
+        byte[] buffer = new byte[8192];
+
         while (true)
         {
-            if (in.read() == -1)
+            if (in.read(buffer) == -1)
             {
                 break;
             }
