@@ -15,6 +15,8 @@ public interface MinecraftAuthenticator
 
     String getAccessToken();
 
+    String getClientToken();
+
     String getID();
 
     String getPlayerName();

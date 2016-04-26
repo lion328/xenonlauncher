@@ -118,6 +118,12 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
     }
 
     @Override
+    public String getClientToken()
+    {
+        return clientToken;
+    }
+
+    @Override
     public String getID()
     {
         if (profile == null)
@@ -137,11 +143,6 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
         }
 
         return profile.getName();
-    }
-
-    public String getClientToken()
-    {
-        return clientToken;
     }
 
     private void checkClientToken(String sent, String received) throws InvalidClientTokenException
