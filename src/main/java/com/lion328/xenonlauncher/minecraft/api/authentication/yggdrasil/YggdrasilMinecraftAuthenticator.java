@@ -3,6 +3,7 @@ package com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.MinecraftAuthenticator;
+import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.api.authentication.exception.InvalidCredentialsException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.exception.MinecraftAuthenticatorException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.exception.InvalidClientTokenException;
@@ -46,6 +47,7 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
 
     private String accessToken;
     private UserProfile profile;
+    private UserInformation userInfo;
 
     public YggdrasilMinecraftAuthenticator()
     {
@@ -91,12 +93,16 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
 
         accessToken = response.getAccessToken();
         profile = response.getSelectedProfile();
+
+        updateUserInformation();
     }
 
     @Override
     public void logout() throws IOException, MinecraftAuthenticatorException
     {
         sendRequest("invalidate", new ValidateRequest(accessToken, clientToken), null, false);
+
+        userInfo = null;
     }
 
     @Override
@@ -109,29 +115,14 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
 
         accessToken = response.getAccessToken();
         profile = response.getSelectedProfile();
+
+        updateUserInformation();
     }
 
     @Override
-    public String getAccessToken()
+    public UserInformation getUserInformation()
     {
-        return accessToken;
-    }
-
-    @Override
-    public String getClientToken()
-    {
-        return clientToken;
-    }
-
-    @Override
-    public String getID()
-    {
-        if (profile == null)
-        {
-            return null;
-        }
-
-        return profile.getId();
+        return userInfo;
     }
 
     @Override
@@ -143,6 +134,18 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
         }
 
         return profile.getName();
+    }
+
+    private void updateUserInformation()
+    {
+        if (profile == null)
+        {
+            userInfo = null;
+
+            return;
+        }
+
+        userInfo = new UserInformation(profile.getId(), accessToken, clientToken);
     }
 
     private void checkClientToken(String sent, String received) throws InvalidClientTokenException

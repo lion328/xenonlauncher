@@ -6,7 +6,9 @@ import com.lion328.xenonlauncher.downloader.Downloader;
 import com.lion328.xenonlauncher.downloader.DownloaderCallback;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.MinecraftAuthenticator;
+import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.api.authentication.exception.MinecraftAuthenticatorException;
+import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.YggdrasilMinecraftAuthenticator;
 import com.lion328.xenonlauncher.minecraft.downloader.MinecraftDownloader;
 import com.lion328.xenonlauncher.minecraft.downloader.Repositories;
 import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
@@ -113,7 +115,6 @@ public class Main
         //System.exit(0);
 
         MinecraftAuthenticator authenticator;
-        //authenticator = new YggdrasilMinecraftAuthenticator();
         authenticator = new MinecraftAuthenticator()
         {
             private String username;
@@ -137,15 +138,9 @@ public class Main
             }
 
             @Override
-            public String getAccessToken()
+            public UserInformation getUserInformation()
             {
-                return "12345";
-            }
-
-            @Override
-            public String getID()
-            {
-                return "12345";
+                return null;
             }
 
             @Override
@@ -154,10 +149,10 @@ public class Main
                 return username;
             }
         };
+        authenticator = new YggdrasilMinecraftAuthenticator();
+        authenticator.login(System.console().readLine("User: "), System.console().readPassword("Password: "));
 
-        //authenticator.login(System.console().readLine("User: "), System.console().readPassword("Password: "));
-
-        authenticator.login("lion328", null);
+        //authenticator.login("lion328", null);
 
         File basepath = new File("/home/lion328/mc2");
         String id = "1.8.9";
@@ -190,8 +185,8 @@ public class Main
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
         launcher.replaceArgument("auth_player_name", authenticator.getPlayerName());
-        //launcher.replaceArgument("auth_uuid", authenticator.getID());
-        //launcher.replaceArgument("auth_access_token", authenticator.getAccessToken());
+        launcher.replaceArgument("auth_uuid", authenticator.getUserInformation().getID());
+        launcher.replaceArgument("auth_access_token", authenticator.getUserInformation().getAccessToken());
 
         //launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");

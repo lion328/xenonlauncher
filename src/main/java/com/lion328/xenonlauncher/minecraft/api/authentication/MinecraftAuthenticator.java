@@ -13,11 +13,7 @@ public interface MinecraftAuthenticator
 
     void refresh() throws IOException, MinecraftAuthenticatorException;
 
-    String getAccessToken();
-
-    String getClientToken();
-
-    String getID();
+    UserInformation getUserInformation();
 
     String getPlayerName();
 }
