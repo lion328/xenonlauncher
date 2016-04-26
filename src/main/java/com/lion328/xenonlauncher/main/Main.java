@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.lion328.xenonlauncher.downloader.Downloader;
 import com.lion328.xenonlauncher.downloader.DownloaderCallback;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
+import com.lion328.xenonlauncher.minecraft.api.authentication.MinecraftAuthenticator;
+import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.YggdrasilMinecraftAuthenticator;
 import com.lion328.xenonlauncher.minecraft.downloader.MinecraftDownloader;
 import com.lion328.xenonlauncher.minecraft.downloader.Repositories;
 import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
@@ -109,6 +111,9 @@ public class Main
         proxy.addDataHandler(50, httpHandler);
         //System.exit(0);
 
+        MinecraftAuthenticator authenticator = new YggdrasilMinecraftAuthenticator();
+        authenticator.login(System.console().readLine("User: "), System.console().readPassword("Password: "));
+
         File basepath = new File("/home/lion328/mc2");
         String id = "1.8.9";
 
@@ -139,11 +144,11 @@ public class Main
         //version = new MergedGameVersion(version, parent);
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
-        launcher.replaceArgument("auth_player_name", "lion328");
-        launcher.replaceArgument("auth_uuid", "f0e9f5b95ce74d3d9545f2013d23ace7");
-        launcher.replaceArgument("auth_access_token", "");
+        launcher.replaceArgument("auth_player_name", authenticator.getPlayerName());
+        launcher.replaceArgument("auth_uuid", authenticator.getID());
+        launcher.replaceArgument("auth_access_token", authenticator.getAccessToken());
 
-        launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
+        //launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
         launcher.addJVMArgument("-DsocksProxyPort=35565");
 
