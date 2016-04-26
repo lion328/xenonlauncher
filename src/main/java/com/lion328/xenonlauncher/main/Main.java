@@ -13,6 +13,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.JSONGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.type.DependencyNameTypeAdapter;
+import com.lion328.xenonlauncher.patcher.FilePatcher;
 import com.lion328.xenonlauncher.patcher.HttpsProtocolPatcher;
 import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
@@ -189,14 +190,14 @@ public class Main
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
         launcher.replaceArgument("auth_player_name", authenticator.getPlayerName());
-        launcher.replaceArgument("auth_uuid", authenticator.getID());
-        launcher.replaceArgument("auth_access_token", authenticator.getAccessToken());
+        //launcher.replaceArgument("auth_uuid", authenticator.getID());
+        //launcher.replaceArgument("auth_access_token", authenticator.getAccessToken());
 
         //launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
         launcher.addJVMArgument("-DsocksProxyPort=35565");
 
-        HttpsProtocolPatcher patcher = new HttpsProtocolPatcher("http");
+        FilePatcher patcher = new HttpsProtocolPatcher("http");
         final DependencyName regex = new DependencyName("com\\.mojang:authlib:.*");
         launcher.addPatcher(regex, patcher);
 

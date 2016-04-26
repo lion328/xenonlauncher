@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 public class JSONGameLauncher extends BasicGameLauncher
 {
@@ -86,6 +86,13 @@ public class JSONGameLauncher extends BasicGameLauncher
     private File getDependencyFile(DependencyName name, String classifier)
     {
         return name.getFile(librariesDir, classifier);
+    }
+
+    private boolean isMatchRegex(DependencyName depName, DependencyName regexDepName)
+    {
+        return depName.getPackageName().matches(regexDepName.getPackageName()) &&
+                depName.getName().matches(regexDepName.getName()) &&
+                depName.getVersion().matches(regexDepName.getVersion());
     }
 
     private void extractNatives(File nativesDir) throws IOException
@@ -167,9 +174,7 @@ public class JSONGameLauncher extends BasicGameLauncher
         for (Map.Entry<DependencyName, FilePatcher> entry : patchers.entrySet())
         {
             regexDepName = entry.getKey();
-            if (depName.getPackageName().matches(regexDepName.getPackageName()) &&
-                    depName.getName().matches(regexDepName.getName()) &&
-                    depName.getVersion().matches(regexDepName.getVersion()))
+            if (isMatchRegex(depName, regexDepName))
             {
                 flag = false;
                 break;
@@ -181,63 +186,59 @@ public class JSONGameLauncher extends BasicGameLauncher
             return inFile;
         }
 
-        Map<String, byte[]> classes = new HashMap<>();
-
-        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(inFile));
-        ZipEntry zipEntry;
-        byte[] buffer = new byte[4096];
-        int read;
-        ByteArrayOutputStream byteTmp = new ByteArrayOutputStream();
-
-        for (; (zipEntry = zipIn.getNextEntry()) != null; zipIn.closeEntry())
-        {
-            if (zipEntry.isDirectory() || (zipEntry.getName().startsWith("META-INF/")))
-            {
-                continue;
-            }
-
-            byteTmp.reset();
-
-            while ((read = zipIn.read(buffer)) != -1)
-            {
-                byteTmp.write(buffer, 0, read);
-            }
-
-            classes.put(zipEntry.getName(), byteTmp.toByteArray());
-        }
-
-        zipIn.close();
-
-        for (Map.Entry<DependencyName, FilePatcher> entry : patchers.entrySet())
-        {
-            regexDepName = entry.getKey();
-            if (depName.getPackageName().matches(regexDepName.getPackageName()) &&
-                    depName.getName().matches(regexDepName.getName()) &&
-                    depName.getVersion().matches(regexDepName.getVersion()))
-            {
-                for (Map.Entry<String, byte[]> classEntry : classes.entrySet())
-                {
-                    buffer = entry.getValue().patchFile(classEntry.getKey(), classEntry.getValue());
-                    buffer = buffer.clone();
-                    classEntry.setValue(buffer);
-                }
-            }
-        }
-
         if (!outFile.getParentFile().exists() && !outFile.getParentFile().mkdirs())
         {
             throw new IOException("Can't create directory");
         }
 
-        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outFile));
+        JarOutputStream zipOut = new JarOutputStream(new FileOutputStream(outFile));
+        ZipInputStream zipIn = new ZipInputStream(new FileInputStream(inFile));
+        ZipEntry zipEntry;
 
-        for (Map.Entry<String, byte[]> classEntry : classes.entrySet())
+        ByteArrayOutputStream byteTmp = new ByteArrayOutputStream(8192);
+        byte[] buffer = new byte[8192];
+        int read;
+
+        for (; (zipEntry = zipIn.getNextEntry()) != null; zipIn.closeEntry())
         {
-            zipOut.putNextEntry(new ZipEntry(classEntry.getKey()));
-            zipOut.write(classEntry.getValue());
+            if (zipEntry.getName().startsWith("META-INF/"))
+            {
+                continue;
+            }
+
+            zipEntry = new ZipEntry(zipEntry.getName());
+            zipOut.putNextEntry(zipEntry);
+
+            if (!zipEntry.isDirectory())
+            {
+                byteTmp.reset();
+
+                while ((read = zipIn.read(buffer)) != -1)
+                {
+                    byteTmp.write(buffer, 0, read);
+                }
+
+                byte[] byteOut = byteTmp.toByteArray();
+
+                for (Map.Entry<DependencyName, FilePatcher> entry : patchers.entrySet())
+                {
+                    regexDepName = entry.getKey();
+
+                    if (!isMatchRegex(depName, regexDepName))
+                    {
+                        continue;
+                    }
+
+                    byteOut = entry.getValue().patchFile(zipEntry.getName(), byteOut);
+                }
+
+                zipOut.write(byteOut);
+            }
+
             zipOut.closeEntry();
         }
 
+        zipIn.close();
         zipOut.close();
 
         return outFile;
