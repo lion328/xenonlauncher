@@ -156,6 +156,11 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
     {
         URL url = new URL(serverURL, endpoint);
 
+        // HttpURLConnection can only handle 2xx response code for headers
+        // so it need to use HttpCore instead
+        // maybe I could use an alternative like HttpClient
+        // but for lightweight, I think is not a good idea
+
         BasicHttpEntity entity = new BasicHttpEntity();
 
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
