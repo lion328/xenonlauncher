@@ -214,7 +214,10 @@ public class MinecraftDownloader implements Downloader
         generator = new AssetsDownloaderGenerator(downloadAssetsInfomation(versionInfo), assetsObjectsDir, assetsURL);
         downloaders.addAll(generator.generateDownloaders());
 
-        downloaders.add(additionalDownloader);
+        if (additionalDownloader != null)
+        {
+            downloaders.add(additionalDownloader);
+        }
 
         Downloader downloader = new MultipleDownloader(downloaders);
         downloader.registerCallback(callback);
