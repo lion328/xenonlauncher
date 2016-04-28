@@ -145,7 +145,7 @@ public class YggdrasilMinecraftAuthenticator implements MinecraftAuthenticator
             return;
         }
 
-        userInfo = new UserInformation(profile.getId(), accessToken, clientToken);
+        userInfo = new UserInformation(profile.getId(), profile.getName(), accessToken, clientToken);
     }
 
     private void checkClientToken(String sent, String received) throws InvalidClientTokenException

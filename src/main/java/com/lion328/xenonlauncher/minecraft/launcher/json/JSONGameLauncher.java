@@ -1,6 +1,7 @@
 package com.lion328.xenonlauncher.minecraft.launcher.json;
 
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
+import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
@@ -402,5 +403,13 @@ public class JSONGameLauncher extends BasicGameLauncher
     public void addGameArgument(String arg)
     {
         gameArgs.add(arg);
+    }
+
+    @Override
+    public void setUserInformation(UserInformation profile)
+    {
+        replaceArgument("auth_player_name", profile.getUsername());
+        replaceArgument("auth_uuid", profile.getID());
+        replaceArgument("auth_access_token", profile.getAccessToken());
     }
 }

@@ -3,11 +3,12 @@ package com.lion328.xenonlauncher.main;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lion328.xenonlauncher.downloader.Downloader;
-import com.lion328.xenonlauncher.downloader.DownloaderCallback;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
+import com.lion328.xenonlauncher.launcher.BasicLauncher;
+import com.lion328.xenonlauncher.launcher.Launcher;
+import com.lion328.xenonlauncher.launcher.ui.CLILauncherUI;
+import com.lion328.xenonlauncher.launcher.ui.LauncherUI;
 import com.lion328.xenonlauncher.minecraft.api.authentication.MinecraftAuthenticator;
-import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
-import com.lion328.xenonlauncher.minecraft.api.authentication.exception.MinecraftAuthenticatorException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.YggdrasilMinecraftAuthenticator;
 import com.lion328.xenonlauncher.minecraft.downloader.MinecraftDownloader;
 import com.lion328.xenonlauncher.minecraft.downloader.Repositories;
@@ -115,59 +116,13 @@ public class Main
         //System.exit(0);
 
         MinecraftAuthenticator authenticator;
-        authenticator = new MinecraftAuthenticator()
-        {
-            private String username;
-
-            @Override
-            public void login(String username, char[] password) throws IOException, MinecraftAuthenticatorException
-            {
-                this.username = username;
-            }
-
-            @Override
-            public void logout() throws IOException, MinecraftAuthenticatorException
-            {
-
-            }
-
-            @Override
-            public void refresh() throws IOException, MinecraftAuthenticatorException
-            {
-
-            }
-
-            @Override
-            public UserInformation getUserInformation()
-            {
-                return null;
-            }
-
-            @Override
-            public String getPlayerName()
-            {
-                return username;
-            }
-        };
         authenticator = new YggdrasilMinecraftAuthenticator();
-        authenticator.login(System.console().readLine("User: "), System.console().readPassword("Password: "));
-
-        //authenticator.login("lion328", null);
+        //authenticator.login(System.console().readLine("User: "), System.console().readPassword("Password: "));
 
         File basepath = new File("/home/lion328/mc2");
         String id = "1.8.9";
 
         Downloader mcDownloader = new MinecraftDownloader(id, basepath, Repositories.getRepository(), null);
-        mcDownloader.registerCallback(new DownloaderCallback()
-        {
-
-            @Override
-            public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
-            {
-                System.out.println(file.getName() + ", " + overallPercentage + "%, " + fileDownloaded + "/" + fileSize);
-            }
-        });
-        mcDownloader.download();
 
         File versions = new File(basepath, "versions");
         File libraries = new File(basepath, "libraries");
@@ -184,9 +139,6 @@ public class Main
         //version = new MergedGameVersion(version, parent);
 
         GameLauncher launcher = new JSONGameLauncher(version, basepath);
-        launcher.replaceArgument("auth_player_name", authenticator.getPlayerName());
-        launcher.replaceArgument("auth_uuid", authenticator.getUserInformation().getID());
-        launcher.replaceArgument("auth_access_token", authenticator.getUserInformation().getAccessToken());
 
         //launcher.addJVMArgument("-Dlog4j.configuration=/home/lion328/mc2/log4j.xml");
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
@@ -196,52 +148,12 @@ public class Main
         final DependencyName regex = new DependencyName("com\\.mojang:authlib:.*");
         launcher.addPatcher(regex, patcher);
 
-        final Process process = launcher.launch();
+        LauncherUI ui = new CLILauncherUI();
+        Launcher l = new BasicLauncher(authenticator, mcDownloader, launcher);
 
-        new Thread()
-        {
+        l.setLauncherUI(ui);
+        l.start();
 
-            @Override
-            public void run()
-            {
-                int b;
-                try
-                {
-                    while ((b = process.getErrorStream().read()) != -1)
-                    {
-                        System.err.write(b);
-                    }
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    e.printStackTrace();
-                }
-            }
-        }.start();
-
-        Thread td = new Thread()
-        {
-
-            @Override
-            public void run()
-            {
-                int b;
-                try
-                {
-                    while ((b = process.getInputStream().read()) != -1)
-                    {
-                        System.out.write(b);
-                    }
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    e.printStackTrace();
-                }
-            }
-        };
-        td.start();
         //td.join();
 
         //System.exit(0);
@@ -252,11 +164,11 @@ public class Main
             @Override
             public void run()
             {
-                process.destroy();
                 proxy.stop();
             }
         });
 
+        System.out.println();
         System.out.println("Proxy broadcast at " + server.getInetAddress().getHostAddress() + ":" + server.getLocalPort());
 
         proxy.start(server);

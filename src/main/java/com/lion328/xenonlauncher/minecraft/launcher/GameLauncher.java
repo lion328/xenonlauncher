@@ -1,6 +1,7 @@
 package com.lion328.xenonlauncher.minecraft.launcher;
 
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
+import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
 
 public interface GameLauncher
@@ -19,4 +20,6 @@ public interface GameLauncher
     void addGameArgument(String arg);
 
     void setMaxMemorySize(int mb);
+
+    void setUserInformation(UserInformation profile);
 }
