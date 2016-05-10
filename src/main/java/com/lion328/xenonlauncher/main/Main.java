@@ -22,7 +22,7 @@ import com.lion328.xenonlauncher.proxy.HttpDataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.StreamDataHandler;
 import com.lion328.xenonlauncher.proxy.socks5.SOCKS5ProxyServer;
-import com.lion328.xenonlauncher.proxy.util.StreamUtil;
+import com.lion328.xenonlauncher.settings.LauncherConstant;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -33,7 +33,6 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -61,6 +60,18 @@ public class Main
             }
         });
         HttpDataHandler httpHandler = new HttpDataHandler();
+        httpHandler.addHttpRequestHandler(-1, new HttpRequestHandler()
+        {
+            @Override
+            public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException
+            {
+                String host = request.getHeaders("Host")[0].getValue();
+                String uri = request.getRequestLine().getUri();
+                String path = host + uri;
+                String completeUri = "http://" + path;
+                System.out.println(completeUri);
+            }
+        });
         httpHandler.addHttpRequestHandler(0, new HttpRequestHandler()
         {
 
@@ -83,27 +94,6 @@ public class Main
                 clientConnection.getInputStream().reset();
 
                 System.out.println("Start streaming " + completeUri);
-
-                StreamUtil.pipeStreamThread(clientConnection.getInputStream(), new OutputStream()
-                {
-
-                    @Override
-                    public void write(int i) throws IOException
-                    {
-                        serverConnection.getOutputStream().write(i);
-                        System.out.write(i);
-                    }
-                });
-                StreamUtil.pipeStream(serverConnection.getInputStream(), new OutputStream()
-                {
-
-                    @Override
-                    public void write(int i) throws IOException
-                    {
-                        clientConnection.getOutputStream().write(i);
-                        System.out.write(i);
-                    }
-                });
 
                 System.out.println("Finish streamming " + completeUri);
 
@@ -144,6 +134,7 @@ public class Main
         launcher.addJVMArgument("-DsocksProxyHost=127.0.0.1");
         launcher.addJVMArgument("-DsocksProxyPort=35565");
 
+        //FilePatcher patcher = new StringReplaceFilePatcher("https://sessionserver.mojang.com", "http://127.0.0.1/~lion328/mcwebserver/api");
         FilePatcher patcher = new HttpsProtocolPatcher("http");
         final DependencyName regex = new DependencyName("com\\.mojang:authlib:.*");
         launcher.addPatcher(regex, patcher);
@@ -172,5 +163,10 @@ public class Main
         System.out.println("Proxy broadcast at " + server.getInetAddress().getHostAddress() + ":" + server.getLocalPort());
 
         proxy.start(server);
+    }
+
+    public static String getLauncherVersion()
+    {
+        return LauncherConstant.VERSION;
     }
 }
