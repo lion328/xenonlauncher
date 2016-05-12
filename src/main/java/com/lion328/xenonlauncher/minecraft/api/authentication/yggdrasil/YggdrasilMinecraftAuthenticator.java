@@ -10,10 +10,10 @@ import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.exceptio
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.exception.InvalidImplementationException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.exception.YggdrasilAPIException;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.exception.YggdrasilErrorMessage;
+import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.RefreshMessage;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.request.AuthenticateRequest;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.request.ValidateRequest;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.response.AuthenticateResponse;
-import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.shared.RefreshMessage;
 import com.lion328.xenonlauncher.util.URLUtil;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;

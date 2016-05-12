@@ -1,4 +1,4 @@
-package com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message.shared;
+package com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message;
 
 import com.google.gson.annotations.SerializedName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.UserProfile;
