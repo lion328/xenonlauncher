@@ -93,9 +93,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     private boolean isMatchRegex(DependencyName depName, DependencyName regexDepName)
     {
-        return depName.getPackageName().matches(regexDepName.getPackageName()) &&
-                depName.getName().matches(regexDepName.getName()) &&
-                depName.getVersion().matches(regexDepName.getVersion());
+        return (depName.hashCode() == regexDepName.hashCode()) && depName.equals(regexDepName);
     }
 
     private void extractNatives(File nativesDir) throws IOException

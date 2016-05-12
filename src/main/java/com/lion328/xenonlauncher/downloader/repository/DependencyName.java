@@ -86,4 +86,39 @@ public class DependencyName
     {
         return getShortName();
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        DependencyName that = (DependencyName) o;
+
+        if (packageName != null ? !packageName.equals(that.packageName) : that.packageName != null)
+        {
+            return false;
+        }
+        if (name != null ? !name.equals(that.name) : that.name != null)
+        {
+            return false;
+        }
+        return version != null ? version.equals(that.version) : that.version == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = packageName != null ? packageName.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        return result;
+    }
 }
