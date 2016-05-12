@@ -258,7 +258,7 @@ public class JSONGameLauncher extends BasicGameLauncher
             throw new FileNotFoundException(versionJar.getAbsolutePath() + " is missing");
         }
 
-        sb.append(patchLibrary(new DependencyName("net.minecraft:minecraft:" + versionInfo.getID()), versionJar, new File(patchedLibDir, versionInfo.getID() + ".jar")).getAbsolutePath());
+        sb.append(patchLibrary(new DependencyName("net.minecraft:client:" + versionInfo.getID()), versionJar, new File(patchedLibDir, versionInfo.getID() + ".jar")).getAbsolutePath());
 
         for (GameLibrary library : versionInfo.getLibraries())
         {
