@@ -38,6 +38,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     private File basepathDir;
     private File librariesDir;
     private File versionsDir;
+    private File gameDir;
 
     public JSONGameLauncher(GameVersion version, File basepathDir) throws LauncherVersionException
     {
@@ -50,6 +51,7 @@ public class JSONGameLauncher extends BasicGameLauncher
         this.basepathDir = basepathDir;
         this.librariesDir = new File(basepathDir, "libraries");
         this.versionsDir = new File(basepathDir, "versions");
+        this.gameDir = basepathDir;
 
         initialize();
     }
@@ -324,7 +326,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     private ProcessBuilder buildProcess(File nativesDir, File patchedLibDir) throws Exception
     {
         ProcessBuilder processBuilder = new ProcessBuilder(buildProcessArgs(nativesDir, patchedLibDir));
-        processBuilder.directory(basepathDir);
+        processBuilder.directory(gameDir);
         return processBuilder;
     }
 
@@ -379,6 +381,18 @@ public class JSONGameLauncher extends BasicGameLauncher
         });
 
         return process;
+    }
+
+    @Override
+    public File getGameDirectory()
+    {
+        return gameDir;
+    }
+
+    @Override
+    public void setGameDirectory(File dir)
+    {
+        gameDir = dir;
     }
 
     @Override

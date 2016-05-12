@@ -4,10 +4,16 @@ import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
 
+import java.io.File;
+
 public interface GameLauncher
 {
 
     Process launch() throws Exception;
+
+    File getGameDirectory();
+
+    void setGameDirectory(File dir);
 
     void addPatcher(DependencyName regex, FilePatcher patcher);
 
