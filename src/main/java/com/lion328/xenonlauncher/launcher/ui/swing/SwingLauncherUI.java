@@ -17,6 +17,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
@@ -36,8 +37,8 @@ public class SwingLauncherUI implements LauncherUI
     private Frame frame;
     private Map<String, java.awt.Component> components;
     private Map<URL, Image> images;
-
     private JFrame jFrame;
+    private Launcher launcher;
 
     public SwingLauncherUI(Frame frame) throws IOException
     {
@@ -217,37 +218,37 @@ public class SwingLauncherUI implements LauncherUI
     @Override
     public void start()
     {
-
+        setVisible(true);
     }
 
     @Override
     public Launcher getLauncher()
     {
-        return null;
+        return launcher;
     }
 
     @Override
     public void setLauncher(Launcher launcher)
     {
-
+        this.launcher = launcher;
     }
 
     @Override
     public boolean isVisible()
     {
-        return false;
+        return jFrame.isVisible();
     }
 
     @Override
     public void setVisible(boolean visible)
     {
-
+        jFrame.setVisible(true);
     }
 
     @Override
     public void displayError(String message)
     {
-
+        JOptionPane.showMessageDialog(jFrame, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     @Override
