@@ -4,6 +4,7 @@ import com.lion328.xenonlauncher.proxy.DataHandler;
 import com.lion328.xenonlauncher.proxy.ProxyServer;
 import com.lion328.xenonlauncher.proxy.util.BufferedSocket;
 import com.lion328.xenonlauncher.proxy.util.StreamUtil;
+import com.lion328.xenonlauncher.settings.LauncherConstant;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -171,7 +172,7 @@ public class SOCKS5ProxyServer implements ProxyServer
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        LauncherConstant.LOGGER.catching(e);
                     }
                 }
             }.start();

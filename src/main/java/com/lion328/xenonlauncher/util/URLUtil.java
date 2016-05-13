@@ -1,5 +1,7 @@
 package com.lion328.xenonlauncher.util;
 
+import com.lion328.xenonlauncher.settings.LauncherConstant;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -16,7 +18,7 @@ public class URLUtil
         }
         catch (MalformedURLException e)
         {
-            e.printStackTrace();
+            LauncherConstant.LOGGER.catching(e);
         }
         return null;
     }

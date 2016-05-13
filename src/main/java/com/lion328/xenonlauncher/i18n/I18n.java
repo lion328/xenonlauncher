@@ -1,5 +1,7 @@
 package com.lion328.xenonlauncher.i18n;
 
+import com.lion328.xenonlauncher.settings.LauncherConstant;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -25,7 +27,7 @@ public class I18n
         }
         catch (IOException e)
         {
-            // TODO: Add logging mechanism
+            LauncherConstant.LOGGER.catching(e);
         }
     }
 

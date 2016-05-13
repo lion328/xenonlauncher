@@ -7,6 +7,7 @@ import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
+import com.lion328.xenonlauncher.settings.LauncherConstant;
 import com.lion328.xenonlauncher.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
@@ -352,7 +353,7 @@ public class JSONGameLauncher extends BasicGameLauncher
                 }
                 catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    LauncherConstant.LOGGER.catching(e);
                 }
                 FileUtil.deleteFileRescursive(nativesDir);
                 FileUtil.deleteFileRescursive(tmpLibraryDir);
@@ -373,7 +374,7 @@ public class JSONGameLauncher extends BasicGameLauncher
                 }
                 catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    LauncherConstant.LOGGER.catching(e);
                 }
             }
         });
