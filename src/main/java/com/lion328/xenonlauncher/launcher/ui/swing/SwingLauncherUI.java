@@ -1,5 +1,6 @@
 package com.lion328.xenonlauncher.launcher.ui.swing;
 
+import com.lion328.xenonlauncher.i18n.I18n;
 import com.lion328.xenonlauncher.launcher.Launcher;
 import com.lion328.xenonlauncher.launcher.ui.LauncherUI;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.Button;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,6 +42,9 @@ public class SwingLauncherUI implements LauncherUI
     private JFrame jFrame;
     private Launcher launcher;
 
+    private boolean disableLogin;
+    private boolean finishUpdateStatus;
+
     public SwingLauncherUI(Frame frame) throws IOException
     {
         this.frame = frame;
@@ -47,7 +52,11 @@ public class SwingLauncherUI implements LauncherUI
         components = new HashMap<>();
         images = new HashMap<>();
 
+        disableLogin = false;
+        finishUpdateStatus = true;
+
         generateJFrame();
+        registerBehavior();
     }
 
     private void generateJFrame() throws IOException
@@ -131,14 +140,12 @@ public class SwingLauncherUI implements LauncherUI
                     @Override
                     public void mouseEntered(MouseEvent e)
                     {
-                        super.mouseEntered(e);
                         buttonLabel.setIcon(hoverIcon);
                     }
 
                     @Override
                     public void mouseExited(MouseEvent e)
                     {
-                        super.mouseExited(e);
                         buttonLabel.setIcon(imageIcon);
                     }
                 });
@@ -205,7 +212,11 @@ public class SwingLauncherUI implements LauncherUI
 
             if (swingComponent != null)
             {
-                components.put(component.getId(), swingComponent);
+                if (!components.containsKey(component.getId()))
+                {
+                    components.put(component.getId(), swingComponent);
+                }
+
                 jPanel.add(swingComponent);
             }
         }
@@ -213,6 +224,59 @@ public class SwingLauncherUI implements LauncherUI
         components.put(panel.getId(), jPanel);
 
         return jPanel;
+    }
+
+    private void registerBehavior()
+    {
+        java.awt.Component tmp0 = components.get("loginButton");
+        java.awt.Component tmp1 = components.get("usernameField");
+        java.awt.Component tmp2 = components.get("passwordField");
+
+        if (tmp0 != null && tmp1 != null)
+        {
+            if (tmp1 instanceof JTextField && tmp2 instanceof JPasswordField)
+            {
+                final JTextField usernameField = (JTextField) tmp1;
+                final JPasswordField passwordField = (JPasswordField) tmp2;
+
+                tmp0.addMouseListener(new MouseAdapter()
+                {
+                    @Override
+                    public void mouseClicked(MouseEvent e)
+                    {
+                        if (disableLogin)
+                        {
+                            return;
+                        }
+
+                        usernameField.setEnabled(false);
+                        passwordField.setEnabled(false);
+
+                        new SwingWorker<Void, Void>()
+                        {
+
+                            @Override
+                            protected Void doInBackground() throws Exception
+                            {
+                                disableLogin = launcher.loginAndLaunch(usernameField.getText(), passwordField.getPassword());
+                                return null;
+                            }
+
+                            @Override
+                            protected void done()
+                            {
+                                if (!disableLogin)
+                                {
+                                    // If login was not successful
+                                    usernameField.setEnabled(true);
+                                    passwordField.setEnabled(true);
+                                }
+                            }
+                        }.execute();
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -248,12 +312,47 @@ public class SwingLauncherUI implements LauncherUI
     @Override
     public void displayError(String message)
     {
-        JOptionPane.showMessageDialog(jFrame, message, "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(jFrame, message, I18n.get("common.error"), JOptionPane.ERROR_MESSAGE);
     }
 
     @Override
-    public void onPercentageChange(File file, int overallPercentage, long fileSize, long fileDownloaded)
+    public void onPercentageChange(final File file, final int overallPercentage, final long fileSize, final long fileDownloaded)
     {
+        if (!finishUpdateStatus)
+        {
+            return;
+        }
 
+        new SwingWorker<Void, Void>()
+        {
+
+            @Override
+            protected Void doInBackground() throws Exception
+            {
+                finishUpdateStatus = false;
+                return null;
+            }
+
+            @Override
+            protected void done()
+            {
+                java.awt.Component component = components.get("overallProgressBar");
+
+                if (component != null && component instanceof JProgressBar)
+                {
+                    ((JProgressBar) component).setValue(overallPercentage % 100);
+                }
+
+                component = components.get("statusLabel");
+
+                if (component != null && component instanceof JLabel)
+                {
+                    String s = String.format(I18n.get("launcher.ui.status"), file.getName(), overallPercentage, fileDownloaded, fileSize);
+                    ((JLabel) component).setText(s);
+                }
+
+                finishUpdateStatus = true;
+            }
+        }.execute();
     }
 }
