@@ -83,9 +83,11 @@ public class SwingLauncherUI implements LauncherUI
 
         Font defaultFont = frame.getPanel().getFont();
 
+        java.awt.Component swingComponent;
+
         for (Component component : frame.getPanel().getChildren())
         {
-            java.awt.Component swingComponent = null;
+            swingComponent = null;
 
             if (component instanceof Button)
             {
@@ -182,6 +184,7 @@ public class SwingLauncherUI implements LauncherUI
                         break;
                     default:
                         jTextField = new JTextField();
+                        break;
                 }
 
                 jTextField.setBounds(textField.getX(), textField.getY(), textField.getWidth(), textField.getHeight());
