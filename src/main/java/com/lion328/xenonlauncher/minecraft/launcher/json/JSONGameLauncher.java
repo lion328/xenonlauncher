@@ -1,7 +1,9 @@
 package com.lion328.xenonlauncher.minecraft.launcher.json;
 
+import com.google.gson.Gson;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
+import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.UserProperties;
 import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
@@ -329,12 +331,19 @@ public class JSONGameLauncher extends BasicGameLauncher
         return processBuilder;
     }
 
+    public void setUserProperties(UserProperties properties)
+    {
+        replaceArgs.put("user_properties", new Gson().toJson(properties.getProperties()));
+    }
+
     @Override
     public Process launch() throws Exception
     {
+        long time = System.nanoTime();
+
         File versionDir = new File(versionsDir, versionInfo.getID());
-        final File nativesDir = new File(versionDir, versionInfo.getID() + "-natives-" + System.nanoTime());
-        final File tmpLibraryDir = new File(versionDir, versionInfo.getID() + "-patchedlib-" + System.nanoTime());
+        final File nativesDir = new File(versionDir, versionInfo.getID() + "-natives-" + time);
+        final File tmpLibraryDir = new File(versionDir, versionInfo.getID() + "-patchedlib-" + time);
 
         extractNatives(nativesDir);
 

@@ -14,6 +14,8 @@ public class AuthenticateRequest
     private String password;
     @SerializedName("clientToken")
     private String clientToken;
+    @SerializedName("requestUser")
+    private boolean requestUser = true;
 
     public AuthenticateRequest()
     {
@@ -22,10 +24,16 @@ public class AuthenticateRequest
 
     public AuthenticateRequest(GameAgent agent, String username, String password, String clientToken)
     {
+        this(agent, username, password, clientToken, true);
+    }
+
+    public AuthenticateRequest(GameAgent agent, String username, String password, String clientToken, boolean requestUser)
+    {
         this.agent = agent;
         this.username = username;
         this.password = password;
         this.clientToken = clientToken;
+        this.requestUser = requestUser;
     }
 
     public GameAgent getAgent()

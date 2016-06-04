@@ -2,6 +2,7 @@ package com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.message
 
 import com.google.gson.annotations.SerializedName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.UserProfile;
+import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.UserProperties;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ public class AuthenticateResponse
     private List<UserProfile> availableProfiles;
     @SerializedName("selectedProfile")
     private UserProfile profile;
+    @SerializedName("user")
+    private UserProperties user;
 
     public AuthenticateResponse()
     {
@@ -24,10 +27,16 @@ public class AuthenticateResponse
 
     public AuthenticateResponse(String accessToken, String clientToken, List<UserProfile> availableProfiles, UserProfile profile)
     {
+        this(accessToken, clientToken, availableProfiles, profile, null);
+    }
+
+    public AuthenticateResponse(String accessToken, String clientToken, List<UserProfile> availableProfiles, UserProfile profile, UserProperties user)
+    {
         this.accessToken = accessToken;
         this.clientToken = clientToken;
         this.availableProfiles = availableProfiles;
         this.profile = profile;
+        this.user = user;
     }
 
     public String getAccessToken()
@@ -48,5 +57,10 @@ public class AuthenticateResponse
     public UserProfile getSelectedProfile()
     {
         return profile;
+    }
+
+    public UserProperties getUser()
+    {
+        return user;
     }
 }
