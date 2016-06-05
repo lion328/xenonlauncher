@@ -75,7 +75,7 @@ public class LauncherUpdater
         patchLauncher();
     }
 
-    private String getRemoteLauncherVersion() throws IOException
+    public String getRemoteLauncherVersion() throws IOException
     {
         HttpURLConnection connection = (HttpURLConnection) checkURL.openConnection();
 
