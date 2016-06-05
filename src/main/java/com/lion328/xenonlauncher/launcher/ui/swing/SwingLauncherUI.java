@@ -3,6 +3,7 @@ package com.lion328.xenonlauncher.launcher.ui.swing;
 import com.lion328.xenonlauncher.i18n.I18n;
 import com.lion328.xenonlauncher.launcher.Launcher;
 import com.lion328.xenonlauncher.launcher.ui.LauncherUI;
+import com.lion328.xenonlauncher.launcher.ui.swing.data.Browser;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.Button;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.Component;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.Font;
@@ -12,10 +13,12 @@ import com.lion328.xenonlauncher.launcher.ui.swing.data.Panel;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.PasswordField;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.ProgressBar;
 import com.lion328.xenonlauncher.launcher.ui.swing.data.TextField;
+import com.lion328.xenonlauncher.settings.LauncherConstant;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,6 +27,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -208,6 +214,44 @@ public class SwingLauncherUI implements LauncherUI
                 jProgressBar.setBounds(progressBar.getX(), progressBar.getY(), progressBar.getWidth(), progressBar.getHeight());
 
                 swingComponent = jProgressBar;
+            }
+            else if (component instanceof Browser)
+            {
+                Browser browser = (Browser) component;
+
+                JEditorPane jEditorPane = new JEditorPane();
+                jEditorPane.setBounds(browser.getX(), browser.getY(), browser.getWidth(), browser.getHeight());
+                jEditorPane.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+                jEditorPane.setEditable(false);
+
+                if (browser.getURL() != null)
+                {
+                    jEditorPane.setPage(browser.getURL());
+
+                    jEditorPane.addHyperlinkListener(new HyperlinkListener()
+                    {
+                        @Override
+                        public void hyperlinkUpdate(HyperlinkEvent event)
+                        {
+                            if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                            {
+                                if (Desktop.isDesktopSupported())
+                                {
+                                    try
+                                    {
+                                        Desktop.getDesktop().browse(event.getURL().toURI());
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        LauncherConstant.LOGGER.catching(e);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                swingComponent = jEditorPane;
             }
 
             if (swingComponent != null)
