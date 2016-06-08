@@ -39,7 +39,45 @@ import java.net.Socket;
 public class Main
 {
 
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
+    {
+        boolean gui = true;
+        boolean server = false;
+
+        for (String s : args)
+        {
+            switch (s.toLowerCase())
+            {
+                case "nogui":
+                    gui = false;
+                    break;
+                case "server":
+                    server = true;
+                    break;
+            }
+        }
+
+        if (server)
+        {
+            gui = false;
+        }
+
+        try
+        {
+            test(args);
+        }
+        catch (Exception e)
+        {
+            LauncherConstant.LOGGER.catching(e);
+        }
+    }
+
+    public static String getLauncherVersion()
+    {
+        return LauncherConstant.VERSION;
+    }
+
+    public static void test(String[] args) throws Exception
     {
         final ServerSocket server = new ServerSocket(35565);
         final ProxyServer proxy = new SOCKS5ProxyServer();
@@ -163,10 +201,5 @@ public class Main
         System.out.println("Proxy broadcast at " + server.getInetAddress().getHostAddress() + ":" + server.getLocalPort());
 
         proxy.start(server);
-    }
-
-    public static String getLauncherVersion()
-    {
-        return LauncherConstant.VERSION;
     }
 }
