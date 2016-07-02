@@ -2,6 +2,8 @@ package com.lion328.xenonlauncher.util;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.File;
+
 public enum OS
 {
 
@@ -10,6 +12,7 @@ public enum OS
     @SerializedName("linux")LINUX("linux");
 
     private static OS currentOS = null;
+    private static File appdata = null;
     private final String s;
 
     OS(String s)
@@ -58,6 +61,39 @@ public enum OS
     public static String getCurrentArchitecture()
     {
         return System.getProperty("sun.arch.data.model");
+    }
+
+    public static File getApplicationDataDirectory()
+    {
+        if (appdata == null)
+        {
+            File home = new File(System.getProperty("user.home", "."));
+
+            switch (currentOS)
+            {
+                default:
+                case LINUX:
+                    appdata = home;
+                    break;
+                case WINDOWS:
+                    String winAppdata = System.getenv("APPDATA");
+
+                    if (winAppdata == null)
+                    {
+                        appdata = home;
+                    }
+                    else
+                    {
+                        appdata = new File(winAppdata);
+                    }
+
+                    break;
+                case OSX:
+                    appdata = new File(home, "Library/Application Support/");
+                    break;
+            }
+        }
+        return appdata;
     }
 
     public String toString()
