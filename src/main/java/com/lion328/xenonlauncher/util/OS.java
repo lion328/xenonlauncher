@@ -69,7 +69,7 @@ public enum OS
         {
             File home = new File(System.getProperty("user.home", "."));
 
-            switch (currentOS)
+            switch (getCurrentOS())
             {
                 default:
                 case LINUX:
