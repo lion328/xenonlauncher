@@ -35,18 +35,34 @@ public class StringReplaceFilePatcher implements FilePatcher
         ClassNode node = new ClassNode();
         reader.accept(node, 0);
 
-        List<FieldNode> fields = node.fields;
-        for (FieldNode field : fields)
+        List fields = node.fields;
+        FieldNode field;
+        for (Object obj : fields)
         {
+            if (!(obj instanceof FieldNode))
+            {
+                continue;
+            }
+
+            field = (FieldNode) obj;
+
             if (field.value instanceof String)
             {
                 field.value = ((String) field.value).replace(find, replace);
             }
         }
 
-        List<MethodNode> methods = node.methods;
-        for (MethodNode method : methods)
+        List methods = node.methods;
+        MethodNode method;
+        for (Object obj : methods)
         {
+            if (!(obj instanceof MethodNode))
+            {
+                continue;
+            }
+
+            method = (MethodNode) obj;
+
             InsnList insns = method.instructions;
 
             for (int i = 0; i < insns.size(); i++)
