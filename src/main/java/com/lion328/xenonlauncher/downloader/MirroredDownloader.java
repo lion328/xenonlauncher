@@ -30,15 +30,25 @@ import java.util.List;
 public class MirroredDownloader implements Downloader
 {
 
-    private final Downloader main;
-    private final Downloader mirror;
+    private final List<Downloader> mirrors;
     private final List<DownloaderCallback> callbackList;
+
+    private Downloader workingDownloader;
 
     public MirroredDownloader(Downloader main, Downloader mirror)
     {
-        this.main = main;
-        this.mirror = mirror;
+        this(new ArrayList<Downloader>());
+
+        List<Downloader> list = getDownloaders();
+
+        list.add(main);
+        list.add(mirror);
+    }
+
+    public MirroredDownloader(List<Downloader> mirrors)
+    {
         this.callbackList = new ArrayList<>();
+        this.mirrors = mirrors;
 
         DownloaderCallback callback = new DownloaderCallback()
         {
@@ -53,78 +63,106 @@ public class MirroredDownloader implements Downloader
             }
         };
 
-        main.registerCallback(callback);
-        mirror.registerCallback(callback);
+
+        for (Downloader downloader : mirrors)
+        {
+            downloader.registerCallback(callback);
+        }
+    }
+
+    public List<Downloader> getDownloaders()
+    {
+        return mirrors;
     }
 
     @Override
     public void download() throws IOException
     {
-        try
+        boolean success = false;
+        IOException lastException = null;
+
+        for (Downloader downloader : mirrors)
         {
-            main.download();
+            try
+            {
+                workingDownloader = downloader;
+
+                downloader.download();
+
+                success = true;
+                break;
+            }
+            catch (IOException e)
+            {
+                lastException = e;
+            }
         }
-        catch (IOException e)
+
+        workingDownloader = null;
+
+        if (!success)
         {
-            mirror.download();
+            throw lastException;
         }
     }
 
     @Override
     public void stop()
     {
-        main.stop();
-        mirror.stop();
+        if (workingDownloader != null)
+        {
+            workingDownloader.stop();
+        }
     }
 
     @Override
     public boolean isRunning()
     {
-        return main.isRunning() || mirror.isRunning();
+        return workingDownloader != null && workingDownloader.isRunning();
     }
 
     @Override
     public File getCurrentFile()
     {
-        if (main.getCurrentFile() != null)
+        if (workingDownloader != null)
         {
-            return main.getCurrentFile();
+            return workingDownloader.getCurrentFile();
         }
 
-        return mirror.getCurrentFile();
+        return null;
     }
 
     @Override
     public int getOverallPercentage()
     {
-        if (main.getOverallPercentage() >= mirror.getOverallPercentage())
+        if (workingDownloader != null)
         {
-            return main.getOverallPercentage();
+            return workingDownloader.getOverallPercentage();
         }
 
-        return mirror.getOverallPercentage();
+        return 0;
     }
 
     @Override
     public long getCurrentFileSize()
     {
-        if (main.getCurrentFileSize() >= mirror.getCurrentFileSize())
+        if (workingDownloader != null)
         {
-            return main.getCurrentFileSize();
+            return workingDownloader.getCurrentFileSize();
         }
 
-        return mirror.getCurrentFileSize();
+        return 0;
     }
 
     @Override
     public long getCurrentDownloadedSize()
     {
-        if (main.getCurrentDownloadedSize() >= mirror.getCurrentDownloadedSize())
+        if (workingDownloader != null)
         {
-            return main.getCurrentDownloadedSize();
+            return workingDownloader.getCurrentDownloadedSize();
         }
 
-        return mirror.getCurrentDownloadedSize();
+        return 0;
     }
 
     @Override
