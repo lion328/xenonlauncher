@@ -28,8 +28,8 @@ import com.lion328.xenonlauncher.downloader.FileDownloader;
 import com.lion328.xenonlauncher.downloader.URLFileDownloader;
 import com.lion328.xenonlauncher.downloader.VerifiyFileDownloader;
 import com.lion328.xenonlauncher.downloader.verifier.FileVerifier;
-import com.lion328.xenonlauncher.downloader.verifier.MergedFileVerifier;
 import com.lion328.xenonlauncher.downloader.verifier.MessageDigestFileVerifier;
+import com.lion328.xenonlauncher.downloader.verifier.MultipleFileVerifier;
 import com.lion328.xenonlauncher.downloader.verifier.SizeFileVerifier;
 import com.lion328.xenonlauncher.minecraft.assets.data.Assets;
 import com.lion328.xenonlauncher.minecraft.assets.data.AssetsObject;
@@ -74,7 +74,7 @@ public class AssetsDownloaderGenerator implements DownloaderGenerator
             URL url = new URL(downloadURL, path);
 
             FileVerifier verifier = new MessageDigestFileVerifier(MessageDigestFileVerifier.SHA_1, object.getHash());
-            verifier = new MergedFileVerifier(new SizeFileVerifier(object.getSize()), verifier);
+            verifier = new MultipleFileVerifier(new SizeFileVerifier(object.getSize()), verifier);
             FileDownloader downloader = new URLFileDownloader(url, file);
             downloader = new VerifiyFileDownloader(downloader, verifier);
 
