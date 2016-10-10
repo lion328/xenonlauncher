@@ -434,7 +434,7 @@ public class JSONGameLauncher extends BasicGameLauncher
                             continue;
                         }
 
-                        crashReportFile = new File(line.substring(index + IDENTIFIER.length()));
+                        crashReportFile = new File(line.substring(index + IDENTIFIER.length()).trim());
                     }
                 }
                 catch (IOException e)
