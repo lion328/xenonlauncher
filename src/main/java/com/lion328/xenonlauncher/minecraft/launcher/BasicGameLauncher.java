@@ -22,8 +22,20 @@
 
 package com.lion328.xenonlauncher.minecraft.launcher;
 
+import com.lion328.xenonlauncher.minecraft.logging.CrashReportHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class BasicGameLauncher implements GameLauncher
 {
+
+    protected Map<String, CrashReportHandler> crashReportHandlerMap;
+
+    public BasicGameLauncher()
+    {
+        crashReportHandlerMap = new HashMap<>();
+    }
 
     @Override
     public void addGameArgument(String key, String value)
@@ -39,5 +51,17 @@ public abstract class BasicGameLauncher implements GameLauncher
     public void setMaxMemorySize(int mb)
     {
         addJVMArgument("-Xmx" + mb + "M");
+    }
+
+    @Override
+    public void addCrashReportHandler(String name, CrashReportHandler handler)
+    {
+        crashReportHandlerMap.put(name, handler);
+    }
+
+    @Override
+    public void removeCrashReportHandler(String name)
+    {
+        crashReportHandlerMap.remove(name);
     }
 }

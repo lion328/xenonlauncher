@@ -30,16 +30,20 @@ import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
+import com.lion328.xenonlauncher.minecraft.logging.CrashReportHandler;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
 import com.lion328.xenonlauncher.settings.LauncherConstant;
 import com.lion328.xenonlauncher.util.FileUtil;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -397,12 +401,60 @@ public class JSONGameLauncher extends BasicGameLauncher
                 {
                     LauncherConstant.LOGGER.catching(e);
                 }
+
                 FileUtil.deleteFileRescursive(nativesDir);
                 FileUtil.deleteFileRescursive(tmpLibraryDir);
             }
         };
 
         removeFilesThread.start();
+
+        final Thread crashHandlingThread = new Thread("Handle crash")
+        {
+
+            private static final String IDENTIFIER = "#@!@#";
+
+            @Override
+            public void run()
+            {
+                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line;
+                File crashReportFile = null;
+                int index;
+
+                try
+                {
+                    while((line = br.readLine()) != null)
+                    {
+                        line = line.trim();
+                        index = line.indexOf(IDENTIFIER, IDENTIFIER.length());
+
+                        if (!line.startsWith(IDENTIFIER) || index < 0)
+                        {
+                            continue;
+                        }
+
+                        crashReportFile = new File(line.substring(index + IDENTIFIER.length()));
+                    }
+                }
+                catch (IOException e)
+                {
+                    LauncherConstant.LOGGER.catching(e);
+
+                    return;
+                }
+
+                if (crashReportFile != null)
+                {
+                    for (CrashReportHandler handler : crashReportHandlerMap.values())
+                    {
+                        handler.onGameCrash(crashReportFile);
+                    }
+                }
+            }
+        };
+
+        crashHandlingThread.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread("Finish remove unused files thread")
         {
@@ -412,6 +464,7 @@ public class JSONGameLauncher extends BasicGameLauncher
             {
                 try
                 {
+                    crashHandlingThread.join();
                     removeFilesThread.join(15000);
                 }
                 catch (InterruptedException e)
