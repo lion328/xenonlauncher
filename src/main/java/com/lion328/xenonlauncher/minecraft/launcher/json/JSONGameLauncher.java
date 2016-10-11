@@ -42,7 +42,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -184,9 +183,9 @@ public class JSONGameLauncher extends BasicGameLauncher
         File libFile;
 
         if (original == null ||
-            original.getDownloadInfo() == null ||
-            original.getDownloadInfo().getArtifactInfo() == null ||
-            original.getDownloadInfo().getArtifactInfo().getPath() == null)
+                original.getDownloadInfo() == null ||
+                original.getDownloadInfo().getArtifactInfo() == null ||
+                original.getDownloadInfo().getArtifactInfo().getPath() == null)
         {
             libFile = getDependencyFile(depName);
         }
@@ -424,7 +423,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
                 try
                 {
-                    while((line = br.readLine()) != null)
+                    while ((line = br.readLine()) != null)
                     {
                         line = line.trim();
                         index = line.indexOf(IDENTIFIER, IDENTIFIER.length());
