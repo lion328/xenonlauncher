@@ -83,8 +83,6 @@ public class VirtualAssetsInstaller
 
     public void install() throws IOException
     {
-        updateLastUsed(System.currentTimeMillis());
-
         File targetFile;
 
         for (Map.Entry<String, AssetsObject> entry : assets.getObjects().entrySet())
@@ -100,6 +98,8 @@ public class VirtualAssetsInstaller
 
             Files.copy(getObjectPath(entry.getValue()), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
+
+        updateLastUsed(System.currentTimeMillis());
     }
 
     private void updateLastUsed(long millis) throws IOException
