@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.api.authentication.yggdrasil.UserProperties;
+import com.lion328.xenonlauncher.minecraft.assets.VirtualAssetsInstaller;
+import com.lion328.xenonlauncher.minecraft.assets.data.Assets;
 import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
@@ -41,6 +43,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -67,6 +70,11 @@ public class JSONGameLauncher extends BasicGameLauncher
     private File librariesDir;
     private File versionsDir;
     private File gameDir;
+    private File assetsDir;
+    private File assetsIndexesDir;
+    private File assetsObjectsDir;
+    private File virtualAssetsDir;
+    private File gameVirtualAssetsDir;
 
     public JSONGameLauncher(GameVersion version, File basepathDir) throws LauncherVersionException
     {
@@ -80,6 +88,10 @@ public class JSONGameLauncher extends BasicGameLauncher
         this.librariesDir = new File(basepathDir, "libraries");
         this.versionsDir = new File(basepathDir, "versions");
         this.gameDir = basepathDir;
+        this.assetsDir = new File(basepathDir, "assets");
+        this.assetsIndexesDir = new File(assetsDir, "indexes");
+        this.assetsObjectsDir = new File(assetsDir, "objects");
+        this.virtualAssetsDir = new File(assetsDir, "virtual");
 
         initialize();
     }
@@ -91,6 +103,8 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     private void initialize()
     {
+        gameVirtualAssetsDir = new File(virtualAssetsDir, versionInfo.getAssets());
+
         replaceArgs.put("version_name", versionInfo.getID());
         replaceArgs.put("version_type", versionInfo.getReleaseType().toString());
         replaceArgs.put("game_directory", basepathDir.getAbsolutePath());
@@ -99,14 +113,8 @@ public class JSONGameLauncher extends BasicGameLauncher
         replaceArgs.put("auth_uuid", new UUID(0, 0).toString());
         replaceArgs.put("auth_access_token", "12345");
         replaceArgs.put("assets_index_name", versionInfo.getAssets());
-
-        File assetsRoot = new File(basepathDir, "assets");
-        if (versionInfo.getAssets().equals("legacy"))
-        {
-            assetsRoot = new File(assetsRoot, "virtual/legacy");
-        }
-
-        replaceArgs.put("assets_root", assetsRoot.getAbsolutePath());
+        replaceArgs.put("assets_root", assetsDir.getAbsolutePath());
+        replaceArgs.put("game_assets", gameVirtualAssetsDir.getAbsolutePath());
     }
 
     private File getDependencyFile(DependencyName name)
@@ -177,13 +185,26 @@ public class JSONGameLauncher extends BasicGameLauncher
         }
     }
 
+    private void installVirtualAssets() throws IOException
+    {
+        File assetsFile = new File(assetsIndexesDir, versionInfo.getAssets() + ".json");
+
+        if (!assetsFile.isFile())
+        {
+            return;
+        }
+
+        Assets assets = new Gson().fromJson(new FileReader(assetsFile), Assets.class);
+
+        new VirtualAssetsInstaller(assets, assetsObjectsDir, gameVirtualAssetsDir).install();
+    }
+
     private File patchLibrary(GameLibrary original, File dir) throws Exception
     {
         DependencyName depName = original.getDependencyName();
         File libFile;
 
-        if (original == null ||
-                original.getDownloadInfo() == null ||
+        if (original.getDownloadInfo() == null ||
                 original.getDownloadInfo().getArtifactInfo() == null ||
                 original.getDownloadInfo().getArtifactInfo().getPath() == null)
         {
@@ -382,6 +403,8 @@ public class JSONGameLauncher extends BasicGameLauncher
         final File tmpLibraryDir = new File(versionDir, versionInfo.getID() + "-patchedlib-" + time);
 
         extractNatives(nativesDir);
+
+        installVirtualAssets();
 
         ProcessBuilder pb = buildProcess(nativesDir, tmpLibraryDir);
         final Process process = pb.start();
