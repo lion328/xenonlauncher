@@ -404,7 +404,10 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         extractNatives(nativesDir);
 
-        installVirtualAssets();
+        if (versionInfo.getMinecraftArguments().contains("${game_assets}"))
+        {
+            installVirtualAssets();
+        }
 
         ProcessBuilder pb = buildProcess(nativesDir, tmpLibraryDir);
         final Process process = pb.start();
