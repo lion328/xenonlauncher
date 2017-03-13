@@ -41,7 +41,14 @@ public class StreamUtil
         }
         catch (IOException e)
         {
+            try
+            {
+                out.close();
+            }
+            catch (IOException ignore)
+            {
 
+            }
         }
     }
 

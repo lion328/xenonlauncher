@@ -26,13 +26,14 @@ import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.logging.CrashReportHandler;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
+import com.lion328.xenonlauncher.util.io.ProcessOutput;
 
 import java.io.File;
 
 public interface GameLauncher
 {
 
-    Process launch() throws Exception;
+    ProcessOutput launch() throws Exception;
 
     File getGameDirectory();
 

@@ -28,6 +28,7 @@ import com.lion328.xenonlauncher.minecraft.api.authentication.MinecraftAuthentic
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
 import com.lion328.xenonlauncher.minecraft.api.authentication.exception.MinecraftAuthenticatorException;
 import com.lion328.xenonlauncher.minecraft.launcher.GameLauncher;
+import com.lion328.xenonlauncher.util.io.ProcessOutput;
 
 import java.io.IOException;
 
@@ -138,9 +139,9 @@ public class BasicLauncher implements Launcher
 
         try
         {
-            final Process process = mcLauncher.launch();
+            final ProcessOutput process = mcLauncher.launch();
 
-            new Thread()
+            /*new Thread()
             {
 
                 @Override
@@ -157,7 +158,7 @@ public class BasicLauncher implements Launcher
 
                     exit();
                 }
-            }.start();
+            }.start();*/
 
             new Thread()
             {
