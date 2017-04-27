@@ -34,6 +34,7 @@ public enum OS
     @SerializedName("linux")LINUX("linux");
 
     private static OS currentOS = null;
+    private static Architecture currentArch = null;
     private static File appdata = null;
     private final String s;
 
@@ -80,9 +81,19 @@ public enum OS
         return System.getProperty("os.version");
     }
 
-    public static String getCurrentArchitecture()
+    public static Architecture getCurrentArchitecture()
     {
-        return System.getProperty("sun.arch.data.model");
+        if (currentArch == null)
+        {
+            currentArch = Architecture.fromString(System.getProperty("sun.arch.data.model"));
+        }
+
+        return currentArch;
+    }
+
+    public static String getCurrentArchitectureName()
+    {
+        return getCurrentArchitecture().toString();
     }
 
     public static File getApplicationDataDirectory()
@@ -121,5 +132,37 @@ public enum OS
     public String toString()
     {
         return s;
+    }
+
+    public enum Architecture
+    {
+
+        ARCH_32("32"), ARCH_64("64"), UNKNOWN("unknown");
+
+        private String s;
+
+        Architecture(String s)
+        {
+            this.s = s;
+        }
+
+        @Override
+        public String toString()
+        {
+            return s;
+        }
+
+        public static Architecture fromString(String s)
+        {
+            for (Architecture arch : values())
+            {
+                if (arch.s.equals(s))
+                {
+                    return arch;
+                }
+            }
+
+            return UNKNOWN;
+        }
     }
 }

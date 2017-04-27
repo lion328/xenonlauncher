@@ -37,6 +37,7 @@ import com.lion328.xenonlauncher.patcher.FilePatcher;
 import com.lion328.xenonlauncher.proxy.util.StreamUtil;
 import com.lion328.xenonlauncher.settings.LauncherConstant;
 import com.lion328.xenonlauncher.util.FileUtil;
+import com.lion328.xenonlauncher.util.OS;
 import com.lion328.xenonlauncher.util.io.ProcessOutput;
 import com.lion328.xenonlauncher.util.io.TeeOutputStream;
 
@@ -73,6 +74,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     private Map<String, String> replaceArgs = new HashMap<>();
     private Map<DependencyName, FilePatcher> patchers = new HashMap<>();
 
+    private boolean allowNativesArchFallback;
     private GameVersion versionInfo;
     private File basepathDir;
     private File librariesDir;
@@ -86,11 +88,17 @@ public class JSONGameLauncher extends BasicGameLauncher
 
     public JSONGameLauncher(GameVersion version, File basepathDir) throws LauncherVersionException
     {
+        this(version, basepathDir, true);
+    }
+
+    public JSONGameLauncher(GameVersion version, File basepathDir, boolean allowNativesArchFallback) throws LauncherVersionException
+    {
         if (version.getMinimumLauncherVersion() > GameVersion.PARSER_VERSION)
         {
             throw new LauncherVersionException("Unsupported launcher version (" + version.getMinimumLauncherVersion() + ")");
         }
 
+        this.allowNativesArchFallback = allowNativesArchFallback;
         versionInfo = version;
         this.basepathDir = basepathDir;
         this.librariesDir = new File(basepathDir, "libraries");
@@ -155,6 +163,12 @@ public class JSONGameLauncher extends BasicGameLauncher
             {
                 nativesFile = getDependencyFile(library.getDependencyName(),
                         library.getNatives().getNative());
+
+                if (allowNativesArchFallback && !nativesFile.isFile() && OS.getCurrentArchitecture() != OS.Architecture.ARCH_32)
+                {
+                    nativesFile = getDependencyFile(library.getDependencyName(),
+                            library.getNatives().getNative(OS.getCurrentOS(), OS.Architecture.ARCH_32));
+                }
 
                 zip = new ZipInputStream(new FileInputStream(nativesFile));
 

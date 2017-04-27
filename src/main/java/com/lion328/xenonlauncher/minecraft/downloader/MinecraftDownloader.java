@@ -63,7 +63,7 @@ public class MinecraftDownloader implements Downloader
     private final Repository repository;
     private final OS os;
     private final String osVersion;
-    private final String osArch;
+    private final OS.Architecture osArch;
     private final Downloader additionalDownloader;
 
     private final List<DownloaderCallback> callbackList;
@@ -89,7 +89,7 @@ public class MinecraftDownloader implements Downloader
         this(id, basepath, gameURL, assetsURL, assetsIndexesURL, repository, OS.getCurrentOS(), OS.getCurrentVersion(), OS.getCurrentArchitecture(), additionalDownloader);
     }
 
-    public MinecraftDownloader(String id, File basepath, URL gameURL, URL assetsURL, URL assetsIndexesURL, Repository repository, OS os, String osVersion, String osArch, Downloader additionalDownloader)
+    public MinecraftDownloader(String id, File basepath, URL gameURL, URL assetsURL, URL assetsIndexesURL, Repository repository, OS os, String osVersion, OS.Architecture osArch, Downloader additionalDownloader)
     {
         this.id = id;
         this.basepath = basepath;

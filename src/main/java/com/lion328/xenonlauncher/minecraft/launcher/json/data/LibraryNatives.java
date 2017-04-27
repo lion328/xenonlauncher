@@ -42,7 +42,7 @@ public class LibraryNatives
         this.windows = windows;
     }
 
-    public String getNative(OS os, String arch)
+    public String getNative(OS os, OS.Architecture arch)
     {
         String s;
         switch (os)
@@ -58,7 +58,7 @@ public class LibraryNatives
                 s = osx;
                 break;
         }
-        return s.replace("${arch}", arch);
+        return s.replace("${arch}", arch.toString());
     }
 
     public String getNative()
