@@ -139,7 +139,7 @@ public class BasicLauncher implements Launcher
 
         try
         {
-            final ProcessOutput process = mcLauncher.launch();
+            final Process process = mcLauncher.launch();
 
             /*new Thread()
             {

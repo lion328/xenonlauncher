@@ -24,16 +24,14 @@ package com.lion328.xenonlauncher.minecraft.launcher;
 
 import com.lion328.xenonlauncher.downloader.repository.DependencyName;
 import com.lion328.xenonlauncher.minecraft.api.authentication.UserInformation;
-import com.lion328.xenonlauncher.minecraft.logging.CrashReportHandler;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
-import com.lion328.xenonlauncher.util.io.ProcessOutput;
 
 import java.io.File;
 
 public interface GameLauncher
 {
 
-    ProcessOutput launch() throws Exception;
+    Process launch() throws Exception;
 
     File getGameDirectory();
 
@@ -52,8 +50,4 @@ public interface GameLauncher
     void setMaxMemorySize(int mb);
 
     void setUserInformation(UserInformation profile);
-
-    void addCrashReportHandler(String name, CrashReportHandler handler);
-
-    void removeCrashReportHandler(String name);
 }

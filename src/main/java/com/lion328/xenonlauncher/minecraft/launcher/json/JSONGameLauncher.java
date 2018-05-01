@@ -32,16 +32,11 @@ import com.lion328.xenonlauncher.minecraft.launcher.BasicGameLauncher;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameLibrary;
 import com.lion328.xenonlauncher.minecraft.launcher.json.data.GameVersion;
 import com.lion328.xenonlauncher.minecraft.launcher.json.exception.LauncherVersionException;
-import com.lion328.xenonlauncher.minecraft.logging.CrashReportHandler;
 import com.lion328.xenonlauncher.patcher.FilePatcher;
-import com.lion328.xenonlauncher.proxy.util.StreamUtil;
 import com.lion328.xenonlauncher.settings.LauncherConstant;
 import com.lion328.xenonlauncher.util.FileUtil;
 import com.lion328.xenonlauncher.util.OS;
-import com.lion328.xenonlauncher.util.io.ProcessOutput;
-import com.lion328.xenonlauncher.util.io.TeeOutputStream;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,11 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.jar.JarOutputStream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -416,7 +405,7 @@ public class JSONGameLauncher extends BasicGameLauncher
     }
 
     @Override
-    public ProcessOutput launch() throws Exception
+    public Process launch() throws Exception
     {
         long time = System.nanoTime();
 
@@ -433,18 +422,6 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         ProcessBuilder pb = buildProcess(nativesDir, tmpLibraryDir);
         final Process process = pb.start();
-
-        PipedInputStream pipedInputRet = new PipedInputStream();
-        PipedInputStream pipedInputCrash = new PipedInputStream();
-
-        PipedInputStream pipedErrorRet = new PipedInputStream();
-        PipedInputStream pipedErrorCrash = new PipedInputStream();
-
-        StreamUtil.pipeStreamThread(process.getInputStream(), new TeeOutputStream(new PipedOutputStream(pipedInputCrash), new PipedOutputStream(pipedInputRet)));
-        StreamUtil.pipeStreamThread(process.getErrorStream(), new TeeOutputStream(new PipedOutputStream(pipedErrorCrash), new PipedOutputStream(pipedErrorRet)));
-
-        final ProcessOutput retOutput = new ProcessOutput(process, pipedInputRet, pipedErrorRet);
-        final ProcessOutput crashOutput = new ProcessOutput(process, pipedInputCrash, pipedErrorCrash);
 
         final Thread removeFilesThread = new Thread("Remove natives and patched libraries")
         {
@@ -468,55 +445,6 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         removeFilesThread.start();
 
-        final Thread crashHandlingThread = new Thread("Handle crash")
-        {
-
-            private final Pattern regex = Pattern.compile("^.*#@!@#.*Crash report saved to: #@!@# (.*)$");
-
-            @Override
-            public void run()
-            {
-                InputStream in = crashOutput.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                String line;
-                File crashReportFile = null;
-                int index;
-
-                try
-                {
-                    while ((line = br.readLine()) != null)
-                    {
-                        Matcher matcher = regex.matcher(line);
-
-                        if (!matcher.matches())
-                        {
-                            continue;
-                        }
-
-                        crashReportFile = new File(matcher.group(1));
-
-                        break;
-                    }
-                }
-                catch (IOException e)
-                {
-                    LauncherConstant.LOGGER.catching(e);
-
-                    return;
-                }
-
-                if (crashReportFile != null && crashReportFile.isFile())
-                {
-                    for (CrashReportHandler handler : crashReportHandlerMap.values())
-                    {
-                        handler.onGameCrash(crashReportFile);
-                    }
-                }
-            }
-        };
-
-        crashHandlingThread.start();
-
         Runtime.getRuntime().addShutdownHook(new Thread("Finish remove unused files thread")
         {
 
@@ -525,7 +453,6 @@ public class JSONGameLauncher extends BasicGameLauncher
             {
                 try
                 {
-                    crashHandlingThread.join();
                     removeFilesThread.join(15000);
                 }
                 catch (InterruptedException e)
@@ -535,7 +462,7 @@ public class JSONGameLauncher extends BasicGameLauncher
             }
         });
 
-        return retOutput;
+        return process;
     }
 
     @Override
