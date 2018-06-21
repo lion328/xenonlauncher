@@ -98,14 +98,17 @@ public class GameLibrary
             return true;
         }
 
+        boolean allow = false;
+
         for (LibraryRule rule : rules)
         {
-            if (!rule.isAllowed(os, version))
+            if (rule.getIdentifier().isMatch(os, version))
             {
-                return false;
+                allow = rule.getAction() == LibraryRuleAction.ALLOW;
             }
         }
-        return true;
+
+        return allow;
     }
 
     public boolean isAllowed()

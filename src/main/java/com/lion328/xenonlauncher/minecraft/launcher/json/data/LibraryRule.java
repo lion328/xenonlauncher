@@ -54,6 +54,7 @@ public class LibraryRule
         return identifier;
     }
 
+    @Deprecated
     public boolean isAllowed(OS os, String version)
     {
         return (action == LibraryRuleAction.ALLOW) == (identifier == null || identifier.isMatch(os, version));
