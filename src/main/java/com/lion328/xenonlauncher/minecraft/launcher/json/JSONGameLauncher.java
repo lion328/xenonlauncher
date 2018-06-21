@@ -226,6 +226,11 @@ public class JSONGameLauncher extends BasicGameLauncher
             libFile = new File(librariesDir, original.getDownloadInfo().getArtifactInfo().getPath());
         }
 
+        if (libFile != null && !libFile.isFile())
+        {
+            throw new FileNotFoundException("Library \"" + libFile.getAbsolutePath() + "\" is missing!");
+        }
+
         return patchLibrary(depName, libFile, new File(dir, depName.getShortName().replace(':', '-') + ".jar"));
     }
 
@@ -316,7 +321,7 @@ public class JSONGameLauncher extends BasicGameLauncher
 
         if (!versionJar.isFile())
         {
-            throw new FileNotFoundException(versionJar.getAbsolutePath() + " is missing");
+            throw new FileNotFoundException("Game JAR \"" + versionJar.getAbsolutePath() + "\" is missing");
         }
 
         sb.append(patchLibrary(new DependencyName("net.minecraft:client:" + versionInfo.getID()), versionJar, new File(patchedLibDir, versionInfo.getID() + ".jar")).getAbsolutePath());
