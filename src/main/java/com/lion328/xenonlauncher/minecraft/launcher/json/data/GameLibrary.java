@@ -102,7 +102,9 @@ public class GameLibrary
 
         for (LibraryRule rule : rules)
         {
-            if (rule.getIdentifier().isMatch(os, version))
+            LibraryRule.SystemIdentifier id = rule.getIdentifier();
+
+            if (id == null || id.isMatch(os, version))
             {
                 allow = rule.getAction() == LibraryRuleAction.ALLOW;
             }
