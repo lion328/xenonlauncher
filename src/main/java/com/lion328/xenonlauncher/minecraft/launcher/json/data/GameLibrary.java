@@ -88,7 +88,7 @@ public class GameLibrary
 
     public boolean isJavaLibrary()
     {
-        return !isNativesLibrary() || (downloadInfo != null && downloadInfo.getArtifactInfo() != null);
+        return !isNativesLibrary();
     }
 
     public boolean isAllowed(OS os, String version)
